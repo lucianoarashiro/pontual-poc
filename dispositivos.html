@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — Gestão de Dispositivos</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--s1:#181c27;--s2:#1f2433;--s3:#252a38;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --accent:#4f8ef7;--green:#22c97a;--amber:#f5a623;--red:#f74f4f;--purple:#7c5cfc;
+  --text:#e8eaf0;--muted:#7a8099;--hint:#4a4f62;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;padding:0 24px;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab{font-size:13px;font-weight:500;padding:12px 16px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:7px;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--sans)}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── LAYOUT ── */
+.main{flex:1;padding:20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.active{display:flex;flex-direction:column;gap:14px}
+
+/* ── SUMMARY CARDS ── */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.sum-card{background:var(--s1);border:0.5px solid var(--border);border-radius:12px;padding:14px 16px}
+.sum-val{font-size:24px;font-weight:500;font-family:var(--mono);letter-spacing:-.5px}
+.sum-label{font-size:11px;color:var(--muted);margin-top:3px}
+.sum-delta{font-size:11px;margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--s1);border:0.5px solid var(--border);border-radius:9px;padding:7px 12px;flex:1;min-width:200px}
+.search-box input{background:none;border:none;color:var(--text);font-size:13px;outline:none;width:100%;font-family:var(--sans)}
+.search-box input::placeholder{color:var(--muted)}
+.filter-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:7px 13px;border-radius:9px;cursor:pointer;border:0.5px solid var(--border);background:var(--s1);color:var(--muted);font-family:var(--sans);transition:all .15s;white-space:nowrap}
+.filter-btn:hover,.filter-btn.active{color:var(--text);border-color:var(--border2)}
+.filter-btn.active{background:var(--s2)}
+.primary-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:7px 14px;border-radius:9px;cursor:pointer;border:0.5px solid rgba(79,142,247,.3);background:rgba(79,142,247,.12);color:var(--accent);font-family:var(--sans);transition:opacity .15s;white-space:nowrap}
+.primary-btn:hover{opacity:.85}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--s1);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{font-size:11px;font-weight:500;color:var(--muted);text-align:left;padding:11px 16px;border-bottom:0.5px solid var(--border);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+tbody tr{border-bottom:0.5px solid var(--border);transition:background .1s;cursor:default}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--s2)}
+td{padding:11px 16px;font-size:13px;color:var(--text);white-space:nowrap}
+
+/* status pill */
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px}
+.status-pill .dot{width:6px;height:6px;border-radius:50%}
+.pill-online{background:rgba(34,201,122,.1);color:var(--green);border:0.5px solid rgba(34,201,122,.2)}
+.pill-online .dot{background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse 2s infinite}
+.pill-offline{background:rgba(247,79,79,.1);color:var(--red);border:0.5px solid rgba(247,79,79,.2)}
+.pill-offline .dot{background:var(--red)}
+.pill-warn{background:rgba(245,166,35,.1);color:var(--amber);border:0.5px solid rgba(245,166,35,.2)}
+.pill-warn .dot{background:var(--amber);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* type badge */
+.type-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;background:var(--s2);color:var(--muted);border:0.5px solid var(--border)}
+
+/* bar */
+.bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px}
+.bar-track{flex:1;height:4px;background:var(--s2);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:var(--accent)}
+.bar-fill.warn{background:var(--amber)}
+
+/* action icon */
+.action-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--muted);transition:all .15s;border:0.5px solid transparent;background:none}
+.action-icon:hover{background:var(--s2);color:var(--text);border-color:var(--border)}
+
+/* alert banner */
+.alert-banner{display:flex;align-items:center;gap:12px;background:rgba(247,79,79,.08);border:0.5px solid rgba(247,79,79,.2);border-radius:12px;padding:12px 16px;font-size:13px}
+.alert-banner i{color:var(--red);font-size:16px;flex-shrink:0}
+.alert-title{font-weight:500;color:var(--red)}
+.alert-sub{color:var(--muted);font-size:12px;margin-top:1px}
+
+/* ── AFD PANEL ── */
+.afd-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.afd-card{background:var(--s1);border:0.5px solid var(--border);border-radius:14px;padding:18px}
+.afd-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.afd-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:11px;color:var(--muted);font-weight:500}
+.field select,.field input{background:var(--s2);border:0.5px solid var(--border2);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%}
+.field select:focus,.field input:focus{border-color:var(--accent)}
+.export-btn{width:100%;padding:11px;border-radius:10px;background:rgba(79,142,247,.12);border:0.5px solid rgba(79,142,247,.3);color:var(--accent);font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s;margin-top:4px}
+.export-btn:hover{opacity:.85}
+.export-btn.green{background:rgba(34,201,122,.1);border-color:rgba(34,201,122,.25);color:var(--green)}
+
+.log-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.log-icon.dl{background:rgba(79,142,247,.12);color:var(--accent)}
+.log-icon.ok{background:rgba(34,201,122,.1);color:var(--green)}
+.log-name{color:var(--text);font-weight:500;flex:1}
+.log-meta{color:var(--muted)}
+.log-size{color:var(--muted);font-family:var(--mono);font-size:11px}
+
+/* progress bar afd */
+.afd-progress{height:3px;background:var(--s2);border-radius:2px;overflow:hidden;margin:10px 0}
+.afd-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:2px;width:0%;transition:width .4s ease}
+
+/* map card */
+.map-card{background:var(--s1);border:0.5px solid var(--border);border-radius:14px;padding:18px}
+.map-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.map-title{font-size:13px;font-weight:500;color:var(--text)}
+.location-list{display:flex;flex-direction:column;gap:6px}
+.location-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--s2);border-radius:9px;border:0.5px solid var(--border);font-size:12px}
+.location-name{color:var(--text);display:flex;align-items:center;gap:8px}
+.location-count{color:var(--muted);font-family:var(--mono)}
+
+/* modal overlay */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:var(--s1);border:0.5px solid var(--border2);border-radius:16px;padding:24px;width:420px;max-width:90vw}
+.modal-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.modal-btn{font-size:13px;font-weight:500;padding:8px 16px;border-radius:9px;cursor:pointer;font-family:var(--sans);border:0.5px solid var(--border);background:var(--s2);color:var(--muted);transition:all .15s}
+.modal-btn.primary{background:rgba(79,142,247,.15);color:var(--accent);border-color:rgba(79,142,247,.3)}
+.modal-btn:hover{color:var(--text)}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s1);border:0.5px solid var(--border2);border-radius:12px;padding:12px 18px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:200;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">pont<span>.</span>ual <span style="font-size:11px;color:var(--muted);margin-left:8px;font-family:var(--sans)">Gestão de Dispositivos</span></div>
+  <div class="topbar-right">
+    <span style="font-size:12px;color:var(--muted)" id="topClock">—</span>
+    <div class="avatar">LC</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dispositivos',this)"><i class="ti ti-device-tablet"></i>Dispositivos</button>
+  <button class="tab" onclick="switchTab('marcacoes',this)"><i class="ti ti-clock-check"></i>Marcações</button>
+  <button class="tab" onclick="switchTab('afd',this)"><i class="ti ti-file-export"></i>Exportar AFD</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── DISPOSITIVOS ── -->
+  <div class="panel active" id="panel-dispositivos">
+
+    <!-- alerta offline -->
+    <div class="alert-banner">
+      <i class="ti ti-alert-circle"></i>
+      <div>
+        <div class="alert-title">2 dispositivos offline</div>
+        <div class="alert-sub">Refeitório Central está sem resposta há 47 min · Vestiário B offline desde 08:12</div>
+      </div>
+    </div>
+
+    <!-- summary -->
+    <div class="summary">
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--text)">12</div>
+        <div class="sum-label">Total de dispositivos</div>
+        <div class="sum-delta" style="color:var(--muted)"><i class="ti ti-device-tablet" style="font-size:12px"></i> 8 REP-P · 4 Totens</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--green)">9</div>
+        <div class="sum-label">Online agora</div>
+        <div class="sum-delta" style="color:var(--green)"><i class="ti ti-arrow-up" style="font-size:11px"></i> 75% disponibilidade</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--red)">2</div>
+        <div class="sum-label">Offline</div>
+        <div class="sum-delta" style="color:var(--red)"><i class="ti ti-alert-circle" style="font-size:11px"></i> Requer atenção</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--amber)">1</div>
+        <div class="sum-label">Instável</div>
+        <div class="sum-delta" style="color:var(--amber)"><i class="ti ti-wifi-off" style="font-size:11px"></i> Sinal fraco</div>
+      </div>
+    </div>
+
+    <!-- toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="ti ti-search" style="color:var(--muted);font-size:14px"></i>
+        <input type="text" placeholder="Buscar dispositivo ou local..." oninput="filtrarDisp(this.value)">
+      </div>
+      <button class="filter-btn active" onclick="filtroStatus('todos',this)">Todos</button>
+      <button class="filter-btn" onclick="filtroStatus('online',this)">Online</button>
+      <button class="filter-btn" onclick="filtroStatus('offline',this)">Offline</button>
+      <button class="primary-btn" onclick="abrirModal()"><i class="ti ti-plus"></i>Novo dispositivo</button>
+    </div>
+
+    <!-- tabela -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Dispositivo</th>
+            <th>Local</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Marcações hoje</th>
+            <th>Última atividade</th>
+            <th>Versão</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="dispBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── MARCAÇÕES ── -->
+  <div class="panel" id="panel-marcacoes">
+
+    <!-- toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="ti ti-search" style="color:var(--muted);font-size:14px"></i>
+        <input type="text" placeholder="Buscar colaborador ou matrícula...">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <label style="font-size:12px;color:var(--muted)">De</label>
+        <input type="date" id="dataInicio" style="background:var(--s1);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none">
+        <label style="font-size:12px;color:var(--muted)">até</label>
+        <input type="date" id="dataFim" style="background:var(--s1);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none">
+      </div>
+      <button class="filter-btn" onclick="filtroMetodo('todos',this)" style="border-color:var(--border2);color:var(--text)">Todos os métodos</button>
+      <button class="filter-btn" onclick="filtroMetodo('bt',this)"><i class="ti ti-bluetooth" style="font-size:12px;color:var(--accent)"></i>BT</button>
+      <button class="filter-btn" onclick="filtroMetodo('pin',this)"><i class="ti ti-keyboard" style="font-size:12px;color:var(--amber)"></i>PIN</button>
+      <button class="filter-btn" onclick="filtroMetodo('mat',this)"><i class="ti ti-id-badge" style="font-size:12px;color:var(--green)"></i>Matrícula</button>
+    </div>
+
+    <!-- summary marcações -->
+    <div class="summary">
+      <div class="sum-card">
+        <div class="sum-val">1.847</div>
+        <div class="sum-label">Marcações hoje</div>
+        <div class="sum-delta" style="color:var(--green)"><i class="ti ti-arrow-up" style="font-size:11px"></i> +3% vs ontem</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--accent)">92%</div>
+        <div class="sum-label">Via Bluetooth + Biometria</div>
+        <div class="sum-delta" style="color:var(--muted)">1.699 marcações</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--amber)">6%</div>
+        <div class="sum-label">Via Bluetooth + PIN</div>
+        <div class="sum-delta" style="color:var(--muted)">111 marcações</div>
+      </div>
+      <div class="sum-card">
+        <div class="sum-val" style="color:var(--green)">2%</div>
+        <div class="sum-label">Via matrícula (totem)</div>
+        <div class="sum-delta" style="color:var(--muted)">37 marcações</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:14px">
+
+      <!-- tabela marcações -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Colaborador</th>
+              <th>Matrícula</th>
+              <th>Horário</th>
+              <th>Tipo</th>
+              <th>Dispositivo</th>
+              <th>Método</th>
+            </tr>
+          </thead>
+          <tbody id="marcBody"></tbody>
+        </table>
+      </div>
+
+      <!-- por dispositivo -->
+      <div class="map-card">
+        <div class="map-header">
+          <div class="map-title">Marcações por dispositivo</div>
+          <span style="font-size:11px;color:var(--muted)">hoje</span>
+        </div>
+        <div class="location-list" id="locationList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AFD ── -->
+  <div class="panel" id="panel-afd">
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px">
+      <div style="font-size:14px;font-weight:500;color:var(--text)">Exportação do Arquivo AFD</div>
+      <div style="font-size:12px;color:var(--muted)">Arquivo de Fonte de Dados para o Auditor Fiscal do Trabalho — conforme Portaria 671/2021 e Portaria MTE 1.131/2025</div>
+    </div>
+
+    <div class="afd-grid">
+
+      <!-- config exportação -->
+      <div class="afd-card">
+        <div class="afd-title">Configurar exportação</div>
+        <div class="afd-sub">Selecione o período e os dispositivos para gerar o AFD.</div>
+        <div class="field">
+          <label>Tipo de arquivo</label>
+          <select>
+            <option>AFD — Arquivo de Fonte de Dados (padrão)</option>
+            <option>ACJEF — Arquivo de Controle de Jornada em Formato Eletrônico</option>
+            <option>AFD + ACJEF (ambos)</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="field">
+            <label>Data início</label>
+            <input type="date" id="afdInicio">
+          </div>
+          <div class="field">
+            <label>Data fim</label>
+            <input type="date" id="afdFim">
+          </div>
+        </div>
+        <div class="field">
+          <label>Dispositivos</label>
+          <select>
+            <option>Todos os dispositivos</option>
+            <option>Portaria Principal (REP-P-001)</option>
+            <option>Portaria Secundária (REP-P-002)</option>
+            <option>Refeitório Central (REP-P-003)</option>
+            <option>Linha de Produção A (TEM-001)</option>
+            <option>Linha de Produção B (TEM-002)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Empresa (CNPJ)</label>
+          <input type="text" value="12.345.678/0001-90" readonly style="color:var(--muted)">
+        </div>
+        <button class="export-btn" onclick="simularExport()">
+          <i class="ti ti-file-export"></i>Gerar AFD
+        </button>
+        <div class="afd-progress" id="afdProgress" style="display:none">
+          <div class="afd-progress-fill" id="afdProgressFill"></div>
+        </div>
+        <div id="afdStatus" style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px;display:none"></div>
+      </div>
+
+      <!-- histórico -->
+      <div class="afd-card">
+        <div class="afd-title">Exportações anteriores</div>
+        <div class="afd-sub">Últimos arquivos gerados. Mantenha por no mínimo 5 anos.</div>
+        <div id="afdLog">
+          <div class="log-item">
+            <div class="log-icon ok"><i class="ti ti-check"></i></div>
+            <div style="flex:1">
+              <div class="log-name">AFD_junho_2025.txt</div>
+              <div class="log-meta">01/06 a 30/06/2025 · Todos os dispositivos</div>
+            </div>
+            <div class="log-size">2,4 MB</div>
+            <div class="action-icon" title="Baixar"><i class="ti ti-download"></i></div>
+          </div>
+          <div class="log-item">
+            <div class="log-icon ok"><i class="ti ti-check"></i></div>
+            <div style="flex:1">
+              <div class="log-name">AFD_maio_2025.txt</div>
+              <div class="log-meta">01/05 a 31/05/2025 · Todos os dispositivos</div>
+            </div>
+            <div class="log-size">2,1 MB</div>
+            <div class="action-icon" title="Baixar"><i class="ti ti-download"></i></div>
+          </div>
+          <div class="log-item">
+            <div class="log-icon ok"><i class="ti ti-check"></i></div>
+            <div style="flex:1">
+              <div class="log-name">ACJEF_maio_2025.txt</div>
+              <div class="log-meta">01/05 a 31/05/2025 · Portaria Principal</div>
+            </div>
+            <div class="log-size">890 KB</div>
+            <div class="action-icon" title="Baixar"><i class="ti ti-download"></i></div>
+          </div>
+          <div class="log-item">
+            <div class="log-icon ok"><i class="ti ti-check"></i></div>
+            <div style="flex:1">
+              <div class="log-name">AFD_abril_2025.txt</div>
+              <div class="log-meta">01/04 a 30/04/2025 · Todos os dispositivos</div>
+            </div>
+            <div class="log-size">2,0 MB</div>
+            <div class="action-icon" title="Baixar"><i class="ti ti-download"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- info legal -->
+      <div class="afd-card" style="grid-column:1/-1;background:rgba(79,142,247,.04);border-color:rgba(79,142,247,.15)">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px"><i class="ti ti-shield-check"></i>Conformidade</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">AFD gerado em conformidade com o Anexo IX da Portaria 671/2021. Assinatura digital CAdES aplicada automaticamente em cada arquivo.</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px"><i class="ti ti-clock"></i>Retenção</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">A legislação exige guarda mínima de 5 anos. Todos os arquivos ficam armazenados com backup automático e acesso sob demanda.</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:6px;display:flex;align-items:center;gap:6px"><i class="ti ti-file-certificate"></i>Registro INPI</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.6">Sistema registrado no INPI como REP-P conforme exigência da Portaria 671. Número de registro disponível para auditoria fiscal.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL NOVO DISPOSITIVO -->
+<div class="modal-overlay" id="modalOverlay" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-title">Cadastrar novo dispositivo</div>
+    <div class="modal-sub">O dispositivo receberá um código de ativação após o cadastro.</div>
+    <div class="field"><label>Nome do dispositivo</label><input type="text" placeholder="ex: Portaria Norte"></div>
+    <div class="field"><label>Local / Setor</label><input type="text" placeholder="ex: Linha de Produção C"></div>
+    <div class="field">
+      <label>Tipo</label>
+      <select>
+        <option>Totem (tablet fixo)</option>
+        <option>REP-P (computador)</option>
+        <option>Mobile (celular corporativo)</option>
+      </select>
+    </div>
+    <div class="field"><label>Endereço MAC / ID do dispositivo</label><input type="text" placeholder="ex: AA:BB:CC:DD:EE:FF"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="fecharModal()">Cancelar</button>
+      <button class="modal-btn primary" onclick="cadastrarDisp()"><i class="ti ti-check"></i>Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DADOS ──
+const dispositivos = [
+  { id:'REP-P-001', nome:'Portaria Principal',    local:'Entrada A',        tipo:'Totem',  status:'online',  marcacoes:487, pct:98, lastSeen:'agora',     versao:'2.4.1' },
+  { id:'REP-P-002', nome:'Portaria Secundária',   local:'Entrada B',        tipo:'Totem',  status:'online',  marcacoes:312, pct:63, lastSeen:'há 2 min',   versao:'2.4.1' },
+  { id:'REP-P-003', nome:'Refeitório Central',    local:'Bloco C',          tipo:'REP-P',  status:'offline', marcacoes:0,   pct:0,  lastSeen:'há 47 min',  versao:'2.3.8' },
+  { id:'REP-P-004', nome:'Linha de Produção A',   local:'Fábrica — Ala A',  tipo:'Totem',  status:'online',  marcacoes:298, pct:60, lastSeen:'agora',      versao:'2.4.1' },
+  { id:'REP-P-005', nome:'Linha de Produção B',   local:'Fábrica — Ala B',  tipo:'Totem',  status:'online',  marcacoes:241, pct:48, lastSeen:'há 1 min',   versao:'2.4.1' },
+  { id:'REP-P-006', nome:'Vestiário A',            local:'Bloco A',          tipo:'REP-P',  status:'online',  marcacoes:187, pct:37, lastSeen:'há 3 min',   versao:'2.4.0' },
+  { id:'REP-P-007', nome:'Vestiário B',            local:'Bloco B',          tipo:'REP-P',  status:'offline', marcacoes:0,   pct:0,  lastSeen:'há 2h 10m',  versao:'2.3.8' },
+  { id:'REP-P-008', nome:'Almoxarifado',           local:'Galpão Sul',       tipo:'REP-P',  status:'warn',    marcacoes:89,  pct:17, lastSeen:'há 8 min',   versao:'2.4.0' },
+  { id:'REP-P-009', nome:'RH / Administrativo',   local:'Bloco Adm',        tipo:'REP-P',  status:'online',  marcacoes:143, pct:28, lastSeen:'há 1 min',   versao:'2.4.1' },
+  { id:'REP-P-010', nome:'Laboratório',            local:'Bloco Técnico',    tipo:'REP-P',  status:'online',  marcacoes:67,  pct:13, lastSeen:'agora',      versao:'2.4.1' },
+  { id:'REP-P-011', nome:'Expedição',              local:'Galpão Norte',     tipo:'REP-P',  status:'online',  marcacoes:123, pct:24, lastSeen:'há 4 min',   versao:'2.4.0' },
+  { id:'REP-P-012', nome:'Guarita Externa',        local:'Portão 3',         tipo:'Mobile', status:'online',  marcacoes:44,  pct:8,  lastSeen:'agora',      versao:'2.4.1' },
+];
+
+const marcacoes = [
+  { nome:'Ana Ferreira',    mat:'48201', hora:'08:02', tipo:'Entrada', disp:'Portaria Principal',  metodo:'BT+Face ID' },
+  { nome:'Carlos Mota',     mat:'39041', hora:'08:03', tipo:'Entrada', disp:'Portaria Principal',  metodo:'BT+Face ID' },
+  { nome:'João Silva',      mat:'51023', hora:'08:04', tipo:'Entrada', disp:'Linha de Produção A', metodo:'BT+PIN' },
+  { nome:'Maria Luz',       mat:'42190', hora:'08:04', tipo:'Entrada', disp:'Portaria Secundária',  metodo:'BT+Face ID' },
+  { nome:'Pedro Ramos',     mat:'33871', hora:'08:05', tipo:'Entrada', disp:'Linha de Produção B', metodo:'BT+Face ID' },
+  { nome:'Lucia Torres',    mat:'29482', hora:'08:05', tipo:'Entrada', disp:'Vestiário A',         metodo:'Matrícula' },
+  { nome:'Rafael Costa',    mat:'61029', hora:'08:06', tipo:'Entrada', disp:'Portaria Principal',  metodo:'BT+Face ID' },
+  { nome:'Fernanda Lima',   mat:'48302', hora:'08:07', tipo:'Entrada', disp:'Almoxarifado',        metodo:'BT+PIN' },
+  { nome:'Marcos Alves',    mat:'37291', hora:'08:08', tipo:'Entrada', disp:'RH / Administrativo', metodo:'BT+Face ID' },
+  { nome:'Sandra Neves',    mat:'55012', hora:'08:09', tipo:'Entrada', disp:'Laboratório',         metodo:'BT+Face ID' },
+  { nome:'Bruno Souza',     mat:'41837', hora:'08:10', tipo:'Entrada', disp:'Expedição',           metodo:'BT+PIN' },
+  { nome:'Camila Freitas',  mat:'29018', hora:'08:11', tipo:'Entrada', disp:'Portaria Secundária',  metodo:'BT+Face ID' },
+];
+
+const metodoColor = { 'BT+Face ID':'var(--accent)', 'BT+PIN':'var(--amber)', 'Matrícula':'var(--green)' };
+const metodoIcon  = { 'BT+Face ID':'ti-face-id', 'BT+PIN':'ti-keyboard', 'Matrícula':'ti-id-badge' };
+
+// ── RENDER DISPOSITIVOS ──
+function renderDisp(list) {
+  const tbody = document.getElementById('dispBody');
+  tbody.innerHTML = list.map(d => {
+    const pill = d.status === 'online'
+      ? `<span class="status-pill pill-online"><span class="dot"></span>Online</span>`
+      : d.status === 'offline'
+      ? `<span class="status-pill pill-offline"><span class="dot"></span>Offline</span>`
+      : `<span class="status-pill pill-warn"><span class="dot"></span>Instável</span>`;
+    const pctColor = d.pct > 60 ? '' : d.pct > 30 ? 'warn' : '';
+    const bar = d.status === 'offline' ? `<span style="font-size:12px;color:var(--hint)">—</span>`
+      : `<div class="bar-wrap"><div class="bar-track"><div class="bar-fill ${pctColor}" style="width:${d.pct}%"></div></div><span style="font-size:11px;color:var(--muted);font-family:var(--mono)">${d.marcacoes}</span></div>`;
+    const nameColor = d.status === 'offline' ? 'color:var(--muted)' : '';
+    return `<tr>
+      <td><div style="font-weight:500;${nameColor}">${d.nome}</div><div style="font-size:11px;color:var(--hint);font-family:var(--mono)">${d.id}</div></td>
+      <td style="color:var(--muted)">${d.local}</td>
+      <td><span class="type-badge">${d.tipo}</span></td>
+      <td>${pill}</td>
+      <td>${bar}</td>
+      <td style="color:var(--muted);font-size:12px">${d.lastSeen}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--hint)">${d.versao}</td>
+      <td><div style="display:flex;gap:4px">
+        <div class="action-icon" title="Ver detalhes"><i class="ti ti-eye"></i></div>
+        <div class="action-icon" title="Reiniciar"><i class="ti ti-refresh"></i></div>
+        <div class="action-icon" title="Configurar"><i class="ti ti-settings"></i></div>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── RENDER MARCAÇÕES ──
+function renderMarc() {
+  const tbody = document.getElementById('marcBody');
+  tbody.innerHTML = marcacoes.map(m => `<tr>
+    <td style="font-weight:500">${m.nome}</td>
+    <td style="font-family:var(--mono);color:var(--muted)">${m.mat}</td>
+    <td style="font-family:var(--mono)">${m.hora}</td>
+    <td><span class="type-badge" style="color:var(--green);border-color:rgba(34,201,122,.2)">${m.tipo}</span></td>
+    <td style="color:var(--muted);font-size:12px">${m.disp}</td>
+    <td><span style="font-size:11px;font-weight:500;display:flex;align-items:center;gap:5px;color:${metodoColor[m.metodo]}"><i class="ti ${metodoIcon[m.metodo]}" style="font-size:12px"></i>${m.metodo}</span></td>
+  </tr>`).join('');
+}
+
+// ── RENDER LOCATION LIST ──
+function renderLocations() {
+  const list = document.getElementById('locationList');
+  const sorted = [...dispositivos].filter(d => d.marcacoes > 0).sort((a,b) => b.marcacoes - a.marcacoes).slice(0,6);
+  const max = sorted[0]?.marcacoes || 1;
+  list.innerHTML = sorted.map(d => `
+    <div class="location-item">
+      <div class="location-name">
+        <div style="width:6px;height:6px;border-radius:50%;background:${d.marcacoes/max > .5 ? 'var(--accent)' : 'var(--muted)'}"></div>
+        ${d.nome}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:60px;height:3px;background:var(--s1);border-radius:2px;overflow:hidden"><div style="height:100%;width:${(d.marcacoes/max*100).toFixed(0)}%;background:var(--accent);border-radius:2px"></div></div>
+        <div class="location-count">${d.marcacoes}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── FILTROS ──
+let filtroAtual = 'todos';
+function filtrarDisp(q) {
+  const list = dispositivos.filter(d => {
+    const matchQ = !q || d.nome.toLowerCase().includes(q.toLowerCase()) || d.local.toLowerCase().includes(q.toLowerCase()) || d.id.toLowerCase().includes(q.toLowerCase());
+    const matchS = filtroAtual === 'todos' || d.status === filtroAtual;
+    return matchQ && matchS;
+  });
+  renderDisp(list);
+}
+function filtroStatus(s, btn) {
+  filtroAtual = s;
+  document.querySelectorAll('.panel.active .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filtrarDisp('');
+}
+function filtroMetodo(m, btn) {
+  document.querySelectorAll('#panel-marcacoes .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── TABS ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+// ── MODAL ──
+function abrirModal() { document.getElementById('modalOverlay').classList.add('open'); }
+function fecharModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+function cadastrarDisp() {
+  fecharModal();
+  showToast('<i class="ti ti-check" style="color:var(--green)"></i> Dispositivo cadastrado! Código de ativação enviado.');
+}
+
+// ── EXPORT AFD ──
+function simularExport() {
+  const prog = document.getElementById('afdProgress');
+  const fill = document.getElementById('afdProgressFill');
+  const status = document.getElementById('afdStatus');
+  prog.style.display = 'block';
+  status.style.display = 'block';
+  fill.style.width = '0%';
+  const steps = [
+    [300,  '15%', 'Coletando marcações...'],
+    [900,  '40%', 'Validando registros...'],
+    [1600, '70%', 'Aplicando assinatura CAdES...'],
+    [2200, '90%', 'Gerando arquivo...'],
+    [2800, '100%','Arquivo pronto!'],
+  ];
+  steps.forEach(([t, w, msg]) => setTimeout(() => {
+    fill.style.width = w;
+    status.textContent = msg;
+    if (w === '100%') {
+      setTimeout(() => {
+        prog.style.display = 'none';
+        status.style.display = 'none';
+        showToast('<i class="ti ti-download" style="color:var(--accent)"></i> AFD_julho_2025.txt gerado — 2,6 MB');
+        adicionarLog();
+      }, 600);
+    }
+  }, t));
+}
+
+function adicionarLog() {
+  const log = document.getElementById('afdLog');
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.style.animation = 'fadeIn .3s ease';
+  item.innerHTML = `
+    <div class="log-icon ok"><i class="ti ti-check"></i></div>
+    <div style="flex:1"><div class="log-name">AFD_julho_2025.txt</div><div class="log-meta">01/07 a 12/07/2025 · Todos os dispositivos</div></div>
+    <div class="log-size">2,6 MB</div>
+    <div class="action-icon" title="Baixar"><i class="ti ti-download"></i></div>`;
+  log.insertBefore(item, log.firstChild);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── CLOCK ──
+function tick() {
+  document.getElementById('topClock').textContent = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+setInterval(tick, 1000);
+tick();
+
+// ── DATAS DEFAULT ──
+const hoje = new Date().toISOString().split('T')[0];
+const inicio = new Date(); inicio.setDate(1);
+document.getElementById('dataInicio').value = inicio.toISOString().split('T')[0];
+document.getElementById('dataFim').value = hoje;
+document.getElementById('afdInicio').value = inicio.toISOString().split('T')[0];
+document.getElementById('afdFim').value = hoje;
+
+// ── INIT ──
+renderDisp(dispositivos);
+renderMarc();
+renderLocations();
+</script>
+</body>
+</html>

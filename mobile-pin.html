@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — Fallback PIN</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #0f1117;
+  --s1:     #181c27;
+  --s2:     #1f2433;
+  --border: rgba(255,255,255,.08);
+  --accent: #4f8ef7;
+  --green:  #22c97a;
+  --amber:  #f5a623;
+  --red:    #f74f4f;
+  --text:   #e8eaf0;
+  --muted:  #7a8099;
+  --sans:   'Inter', sans-serif;
+  --mono:   'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--sans);
+  background: #080a10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 32px;
+  min-height: 100vh;
+  padding: 32px 24px;
+}
+
+/* ── PHONE ── */
+.phone {
+  width: 340px;
+  height: 700px;
+  background: var(--bg);
+  border-radius: 44px;
+  border: 2px solid rgba(255,255,255,.1);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,.7);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.notch {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 28px;
+  background: #000;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.notch-cam { width: 10px; height: 10px; border-radius: 50%; background: #1a1a1a; border: 1px solid #333; }
+.notch-face { width: 24px; height: 6px; border-radius: 3px; background: #1a1a1a; }
+
+.status-bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 36px 22px 8px; flex-shrink: 0;
+}
+.status-time { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); }
+.status-icons { display: flex; gap: 5px; font-size: 12px; color: var(--text); }
+
+.phone-scroll { flex: 1; overflow-y: auto; -ms-overflow-style: none; scrollbar-width: none; }
+.phone-scroll::-webkit-scrollbar { display: none; }
+
+/* ── SCREENS ── */
+.screen { display: none; flex-direction: column; padding: 16px 18px 24px; min-height: 100%; animation: fadeIn .2s ease; }
+.screen.active { display: flex; }
+.center-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── HOME ── */
+.home-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.home-greeting { font-size: 16px; font-weight: 500; color: var(--text); }
+.home-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #7c5cfc); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #fff; }
+
+.home-card { background: var(--s1); border: 0.5px solid var(--border); border-radius: 18px; padding: 18px; margin-bottom: 12px; }
+.ponto-time { font-size: 32px; font-weight: 500; color: var(--text); font-family: var(--mono); letter-spacing: -1.5px; }
+.ponto-escala { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.ponto-status { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.ponto-btn { width: 100%; margin-top: 16px; padding: 15px; border-radius: 14px; background: linear-gradient(135deg, var(--accent), #7c5cfc); border: none; color: #fff; font-family: var(--sans); font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; }
+.ponto-btn:active { opacity: .85; transform: scale(.98); }
+.ponto-btn.done { background: rgba(34,201,122,.1); color: var(--green); border: 0.5px solid rgba(34,201,122,.25); cursor: default; }
+
+/* ── DETECTING ── */
+.pulse-wrap { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+.pulse-ring { position: absolute; border-radius: 50%; border: 1.5px solid rgba(79,142,247,.2); animation: pulseOut 2s ease infinite; }
+.pulse-ring:nth-child(1) { width: 140px; height: 140px; animation-delay: 0s; }
+.pulse-ring:nth-child(2) { width: 110px; height: 110px; animation-delay: .35s; }
+.pulse-ring:nth-child(3) { width: 80px; height: 80px; animation-delay: .7s; }
+@keyframes pulseOut { 0%{transform:scale(.9);opacity:1} 100%{transform:scale(1.2);opacity:0} }
+.pulse-core { width: 64px; height: 64px; border-radius: 50%; background: rgba(79,142,247,.1); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--accent); z-index: 1; }
+
+.signal-bar { width: 200px; height: 5px; background: var(--s2); border-radius: 3px; overflow: hidden; margin-bottom: 24px; }
+.signal-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--green)); width: 0%; transition: width .5s ease; }
+
+.det-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: -.3px; }
+.det-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.det-info { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-bottom: 24px; }
+.det-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ── FACE ERROR ── */
+.face-fail-ring { width: 100px; height: 100px; border-radius: 50%; background: rgba(247,79,79,.08); border: 2px solid var(--red); display: flex; align-items: center; justify-content: center; font-size: 42px; color: var(--red); margin-bottom: 20px; animation: shake .4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+
+.error-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.error-sub { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 28px; }
+
+.error-attempts { font-size: 12px; color: var(--amber); margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
+
+.action-btn { width: 100%; max-width: 260px; padding: 13px; border-radius: 13px; border: none; font-family: var(--sans); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .15s; margin-bottom: 8px; }
+.action-btn:active { opacity: .85; transform: scale(.98); }
+.action-btn.primary { background: rgba(79,142,247,.15); color: var(--accent); border: 0.5px solid rgba(79,142,247,.3); }
+.action-btn.amber { background: rgba(245,166,35,.12); color: var(--amber); border: 0.5px solid rgba(245,166,35,.3); }
+.action-btn.ghost { background: var(--s2); color: var(--muted); border: 0.5px solid var(--border); }
+
+/* ── PIN ── */
+.pin-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.pin-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; }
+
+.pin-dots { display: flex; gap: 14px; justify-content: center; margin-bottom: 28px; }
+.pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--border); background: transparent; transition: all .2s; }
+.pin-dot.filled { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(79,142,247,.4); }
+.pin-dot.error { background: var(--red); border-color: var(--red); animation: shake .3s ease; }
+
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 240px; }
+.num-key { background: var(--s1); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px; font-size: 20px; font-weight: 500; color: var(--text); cursor: pointer; transition: all .15s; font-family: var(--sans); display: flex; align-items: center; justify-content: center; }
+.num-key:active { background: var(--s2); transform: scale(.93); }
+.num-key.del { color: var(--muted); font-size: 16px; }
+.num-key.ok { background: rgba(79,142,247,.12); border-color: rgba(79,142,247,.3); color: var(--accent); }
+.num-key.ok:active { background: rgba(79,142,247,.25); }
+
+.pin-attempts { font-size: 11px; color: var(--amber); margin-top: 16px; display: flex; align-items: center; gap: 5px; }
+
+/* ── SUCCESS ── */
+.success-ring { width: 110px; height: 110px; border-radius: 50%; background: rgba(34,201,122,.1); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 48px; color: var(--green); margin-bottom: 20px; animation: popIn .35s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+.success-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; letter-spacing: -.3px; }
+.success-sub { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.success-pill { display: flex; align-items: center; gap: 8px; background: rgba(34,201,122,.1); border: 0.5px solid rgba(34,201,122,.25); border-radius: 20px; padding: 8px 18px; font-size: 14px; font-weight: 500; color: var(--green); margin-bottom: 14px; font-family: var(--mono); }
+
+.receipt { width: 100%; background: var(--s1); border: 0.5px solid var(--border); border-radius: 14px; padding: 14px 16px; text-align: left; }
+.receipt-row { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; border-bottom: 0.5px solid var(--border); }
+.receipt-row:last-child { border-bottom: none; }
+.receipt-label { color: var(--muted); }
+.receipt-val { color: var(--text); font-family: var(--mono); }
+
+/* NOTIF */
+.notif { position: absolute; top: 60px; left: 14px; right: 14px; background: var(--s1); border: 0.5px solid var(--border); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; z-index: 20; box-shadow: 0 8px 32px rgba(0,0,0,.5); animation: slideDown .3s cubic-bezier(.34,1.2,.64,1); cursor: pointer; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+.notif-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(79,142,247,.15); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; flex-shrink: 0; }
+.notif-title { font-size: 12px; font-weight: 500; color: var(--text); }
+.notif-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.notif-action { font-size: 11px; color: var(--accent); margin-top: 3px; font-weight: 500; }
+
+/* ghost btn */
+.ghost-btn { font-size: 12px; color: var(--muted); background: none; border: 0.5px solid var(--border); border-radius: 10px; padding: 9px 18px; cursor: pointer; font-family: var(--sans); margin-top: 8px; }
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<div class="phone">
+  <div class="notch">
+    <div class="notch-cam"></div>
+    <div class="notch-face"></div>
+    <div class="notch-cam"></div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-time" id="statusTime">08:14</div>
+    <div class="status-icons">
+      <i class="ti ti-bluetooth" style="color:#4f8ef7"></i>
+      <i class="ti ti-wifi"></i>
+      <i class="ti ti-battery-3"></i>
+    </div>
+  </div>
+
+  <!-- NOTIF BANNER -->
+  <div class="notif" id="notifBanner" style="display:none" onclick="abrirDetectando()">
+    <div class="notif-icon"><i class="ti ti-bluetooth"></i></div>
+    <div>
+      <div class="notif-title">Pontual</div>
+      <div class="notif-sub">Totem detectado — Portaria Principal</div>
+      <div class="notif-action">Toque para registrar ponto →</div>
+    </div>
+  </div>
+
+  <div class="phone-scroll">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="home-header">
+        <div>
+          <div class="home-greeting">Bom dia, Luciano</div>
+          <div class="home-sub" id="homeDate">—</div>
+        </div>
+        <div class="avatar">LC</div>
+      </div>
+      <div class="home-card">
+        <div class="ponto-time" id="homeClock">--:--</div>
+        <div class="ponto-escala">Escala hoje: 08:00 – 17:00</div>
+        <div class="ponto-status" id="pontoStatus">Entrada ainda não registrada</div>
+        <button class="ponto-btn" id="pontoBtnHome" onclick="iniciarFluxo()">
+          <i class="ti ti-clock"></i>Registrar entrada
+        </button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--s1);border:0.5px solid var(--border);border-radius:14px;padding:14px">
+          <div style="font-size:18px;font-weight:500;font-family:var(--mono);color:var(--green)">+6h 20m</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Banco de horas</div>
+        </div>
+        <div style="background:var(--s1);border:0.5px solid var(--border);border-radius:14px;padding:14px">
+          <div style="font-size:18px;font-weight:500;font-family:var(--mono);color:var(--text)">22 / 22</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">Dias trabalhados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETECTANDO -->
+    <div class="screen" id="screen-detecting">
+      <div class="center-screen">
+        <div class="pulse-wrap">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-core"><i class="ti ti-bluetooth"></i></div>
+        </div>
+        <div class="det-title">Totem detectado</div>
+        <div class="det-sub">Portaria Principal · aproximando...</div>
+        <div class="signal-bar"><div class="signal-fill" id="signalFill"></div></div>
+        <div class="det-info">
+          <div class="det-dot"></div>
+          <span id="detInfo">Conectando...</span>
+        </div>
+        <button class="ghost-btn" onclick="goTo('screen-home')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- FACE ID ERRO -->
+    <div class="screen" id="screen-faceerror">
+      <div class="center-screen">
+        <div class="face-fail-ring" id="faceFailRing"><i class="ti ti-face-id-error"></i></div>
+        <div class="error-title">Face ID não reconhecido</div>
+        <div class="error-sub">Não conseguimos confirmar sua identidade.<br>Isso pode acontecer com EPI, máscara ou pouca iluminação.</div>
+        <div class="error-attempts" id="faceAttempts">
+          <i class="ti ti-alert-triangle" style="font-size:13px"></i>
+          Tentativa 1 de 2
+        </div>
+        <button class="action-btn primary" onclick="tentarFaceNovamente()">
+          <i class="ti ti-refresh"></i>Tentar novamente
+        </button>
+        <button class="action-btn amber" onclick="goTo('screen-pin')">
+          <i class="ti ti-keyboard"></i>Usar PIN de 4 dígitos
+        </button>
+        <button class="action-btn ghost" onclick="goTo('screen-home')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- FACE ID ERRO 2 — direto para PIN -->
+    <div class="screen" id="screen-faceerror2">
+      <div class="center-screen">
+        <div class="face-fail-ring"><i class="ti ti-face-id-error"></i></div>
+        <div class="error-title">Face ID bloqueado</div>
+        <div class="error-sub">Duas tentativas sem sucesso.<br>Use seu PIN para continuar.</div>
+        <button class="action-btn amber" onclick="goTo('screen-pin')" style="margin-top:8px">
+          <i class="ti ti-keyboard"></i>Entrar com PIN
+        </button>
+        <button class="action-btn ghost" onclick="goTo('screen-home')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- PIN -->
+    <div class="screen" id="screen-pin">
+      <div class="center-screen">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,166,35,.12);border:0.5px solid rgba(245,166,35,.3);display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:22px;margin-bottom:16px">
+          <i class="ti ti-lock"></i>
+        </div>
+        <div class="pin-title">Digite seu PIN</div>
+        <div class="pin-sub">PIN cadastrado no app ao instalar.<br>4 dígitos numéricos.</div>
+        <div class="pin-dots" id="pinDots">
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+          <div class="pin-dot"></div>
+        </div>
+        <div class="numpad">
+          <button class="num-key" onclick="pinPress('1')">1</button>
+          <button class="num-key" onclick="pinPress('2')">2</button>
+          <button class="num-key" onclick="pinPress('3')">3</button>
+          <button class="num-key" onclick="pinPress('4')">4</button>
+          <button class="num-key" onclick="pinPress('5')">5</button>
+          <button class="num-key" onclick="pinPress('6')">6</button>
+          <button class="num-key" onclick="pinPress('7')">7</button>
+          <button class="num-key" onclick="pinPress('8')">8</button>
+          <button class="num-key" onclick="pinPress('9')">9</button>
+          <button class="num-key del" onclick="pinDel()"><i class="ti ti-backspace"></i></button>
+          <button class="num-key" onclick="pinPress('0')">0</button>
+          <button class="num-key ok" onclick="pinOk()"><i class="ti ti-check"></i></button>
+        </div>
+        <div class="pin-attempts" id="pinAttempts" style="display:none">
+          <i class="ti ti-alert-triangle" style="font-size:12px"></i>
+          PIN incorreto. Tente novamente.
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="screen" id="screen-success">
+      <div class="center-screen">
+        <div class="success-ring"><i class="ti ti-check"></i></div>
+        <div class="success-title">Entrada registrada!</div>
+        <div class="success-sub" id="successMethod">Confirmado via PIN</div>
+        <div class="success-pill">
+          <i class="ti ti-clock"></i>
+          <span id="successTime">08:14</span>
+        </div>
+        <div class="receipt">
+          <div class="receipt-row"><span class="receipt-label">Colaborador</span><span class="receipt-val">Luciano Costa</span></div>
+          <div class="receipt-row"><span class="receipt-label">Matrícula</span><span class="receipt-val">48210</span></div>
+          <div class="receipt-row"><span class="receipt-label">Totem</span><span class="receipt-val">Portaria Principal</span></div>
+          <div class="receipt-row"><span class="receipt-label">Método</span><span class="receipt-val" id="receiptMetodo">BT + PIN</span></div>
+          <div class="receipt-row"><span class="receipt-label">Protocolo</span><span class="receipt-val">#PT-2025-0892</span></div>
+        </div>
+        <button class="ponto-btn done" style="margin-top:16px" onclick="goTo('screen-home')">
+          <i class="ti ti-home"></i>Voltar ao início
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LATERAL -->
+<div style="display:flex;flex-direction:column;gap:12px;max-width:200px;padding-top:40px">
+  <div style="font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Fluxo — fallback</div>
+
+  <div class="step-item active" id="step1">
+    <div class="step-num active" id="sn1">1</div>
+    <div><div class="step-title">App detecta totem</div><div class="step-sub">Bluetooth em segundo plano</div></div>
+  </div>
+  <div class="step-item" id="step2">
+    <div class="step-num" id="sn2">2</div>
+    <div><div class="step-title">Proximidade confirmada</div><div class="step-sub">Sinal forte o suficiente</div></div>
+  </div>
+  <div class="step-item" id="step3">
+    <div class="step-num" id="sn3">3</div>
+    <div><div class="step-title">Face ID falha</div><div class="step-sub">EPI, máscara ou luz ruim</div></div>
+  </div>
+  <div class="step-item" id="step4">
+    <div class="step-num" id="sn4">4</div>
+    <div><div class="step-title">2ª tentativa falha</div><div class="step-sub">Face ID bloqueado</div></div>
+  </div>
+  <div class="step-item" id="step5">
+    <div class="step-num" id="sn5">5</div>
+    <div><div class="step-title">PIN de 4 dígitos</div><div class="step-sub">Fallback seguro</div></div>
+  </div>
+  <div class="step-item" id="step6">
+    <div class="step-num" id="sn6">6</div>
+    <div><div class="step-title">Ponto registrado</div><div class="step-sub">Método registrado no log</div></div>
+  </div>
+
+  <button onclick="iniciarFluxoCompleto()" style="margin-top:16px;padding:10px 16px;border-radius:10px;background:rgba(245,166,35,.12);border:0.5px solid rgba(245,166,35,.3);color:var(--amber);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;justify-content:center">
+    <i class="ti ti-play"></i>Simular fluxo completo
+  </button>
+  <button onclick="goTo('screen-home');resetFluxo()" style="padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;font-family:var(--sans)">
+    Reiniciar
+  </button>
+
+  <div style="margin-top:8px;padding:12px;background:rgba(245,166,35,.06);border:0.5px solid rgba(245,166,35,.2);border-radius:10px">
+    <div style="font-size:11px;color:var(--amber);font-weight:500;margin-bottom:4px"><i class="ti ti-info-circle"></i> PIN no protótipo</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);line-height:1.5">Digite <strong style="color:rgba(255,255,255,.5)">1234</strong> para simular PIN correto. Qualquer outro valor simula erro.</div>
+  </div>
+</div>
+
+<style>
+.step-item { display: flex; align-items: flex-start; gap: 12px; opacity: .3; transition: opacity .3s; }
+.step-item.active { opacity: 1; }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--s1); border: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: rgba(255,255,255,.3); flex-shrink: 0; transition: all .3s; }
+.step-num.active { background: rgba(245,166,35,.2); border-color: rgba(245,166,35,.5); color: var(--amber); }
+.step-num.done { background: rgba(34,201,122,.15); border-color: rgba(34,201,122,.4); color: var(--green); }
+.step-num.error { background: rgba(247,79,79,.15); border-color: rgba(247,79,79,.4); color: var(--red); }
+.step-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.7); }
+.step-sub { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 2px; }
+</style>
+
+<script>
+let pinValue = '';
+let fluxoRunning = false;
+
+function tick() {
+  const t = new Date();
+  const ts = t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('statusTime').textContent = ts;
+  document.getElementById('homeClock').textContent = ts;
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  document.getElementById('homeDate').textContent = `${dias[t.getDay()]}, ${t.getDate()} ${meses[t.getMonth()]}`;
+}
+setInterval(tick, 1000);
+tick();
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-pin') { pinValue = ''; updatePinDots(); document.getElementById('pinAttempts').style.display = 'none'; }
+}
+
+function setStep(n, tipo) {
+  for (let i = 1; i <= 6; i++) {
+    const item = document.getElementById('step' + i);
+    const num = document.getElementById('sn' + i);
+    if (i < n) {
+      item.classList.add('active');
+      num.className = i === 3 || i === 4 ? 'step-num error' : 'step-num done';
+      num.textContent = i === 3 || i === 4 ? '✕' : '✓';
+    } else if (i === n) {
+      item.classList.add('active');
+      num.className = 'step-num active';
+      num.textContent = i;
+    } else {
+      item.classList.remove('active');
+      num.className = 'step-num';
+      num.textContent = i;
+    }
+  }
+}
+
+function resetFluxo() {
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('sn' + i).className = 'step-num';
+    document.getElementById('sn' + i).textContent = i;
+  }
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('sn1').className = 'step-num active';
+  document.getElementById('notifBanner').style.display = 'none';
+  document.getElementById('signalFill').style.width = '0%';
+  fluxoRunning = false;
+}
+
+function iniciarFluxo() { if (!fluxoRunning) iniciarFluxoCompleto(); }
+
+function iniciarFluxoCompleto() {
+  if (fluxoRunning) return;
+  fluxoRunning = true;
+  resetFluxo();
+  goTo('screen-home');
+  setStep(1);
+
+  // notificação
+  setTimeout(() => {
+    document.getElementById('notifBanner').style.display = 'flex';
+    setStep(1);
+  }, 800);
+
+  // abre detectando
+  setTimeout(() => {
+    document.getElementById('notifBanner').style.display = 'none';
+    goTo('screen-detecting');
+    setStep(2);
+    animarSinal();
+  }, 2200);
+
+  // face id erro 1
+  setTimeout(() => {
+    goTo('screen-faceerror');
+    setStep(3);
+    document.getElementById('faceAttempts').innerHTML = '<i class="ti ti-alert-triangle" style="font-size:13px"></i> Tentativa 1 de 2';
+  }, 4600);
+
+  // face id erro 2 (automático após 2s)
+  setTimeout(() => {
+    goTo('screen-faceerror2');
+    setStep(4);
+  }, 6800);
+
+  // PIN
+  setTimeout(() => {
+    goTo('screen-pin');
+    setStep(5);
+    fluxoRunning = false;
+  }, 8200);
+}
+
+function abrirDetectando() {
+  document.getElementById('notifBanner').style.display = 'none';
+  goTo('screen-detecting');
+  setStep(2);
+  animarSinal();
+  setTimeout(() => { goTo('screen-faceerror'); setStep(3); }, 2400);
+}
+
+function tentarFaceNovamente() {
+  document.getElementById('faceAttempts').innerHTML = '<i class="ti ti-alert-triangle" style="font-size:13px"></i> Tentativa 2 de 2';
+  setTimeout(() => {
+    goTo('screen-faceerror2');
+    setStep(4);
+  }, 1200);
+}
+
+function animarSinal() {
+  const fill = document.getElementById('signalFill');
+  const msgs = ['Conectando ao totem...', 'Sinal forte detectado', 'Proximidade confirmada ✓'];
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.width = '35%'; document.getElementById('detInfo').textContent = msgs[0]; }, 100);
+  setTimeout(() => { fill.style.width = '70%'; document.getElementById('detInfo').textContent = msgs[1]; }, 900);
+  setTimeout(() => { fill.style.width = '100%'; document.getElementById('detInfo').textContent = msgs[2]; }, 1700);
+}
+
+// PIN
+function updatePinDots() {
+  const dots = document.getElementById('pinDots').children;
+  Array.from(dots).forEach((d, i) => {
+    d.classList.toggle('filled', i < pinValue.length);
+    d.classList.remove('error');
+  });
+}
+
+function pinPress(n) {
+  if (pinValue.length >= 4) return;
+  pinValue += n;
+  updatePinDots();
+  if (pinValue.length === 4) setTimeout(pinOk, 200);
+}
+
+function pinDel() {
+  pinValue = pinValue.slice(0, -1);
+  updatePinDots();
+}
+
+function pinOk() {
+  if (pinValue.length < 4) return;
+  if (pinValue === '1234') {
+    // sucesso
+    const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('successTime').textContent = t;
+    document.getElementById('successMethod').textContent = 'Confirmado via PIN — registrado no log';
+    document.getElementById('receiptMetodo').textContent = 'BT + PIN';
+    goTo('screen-success');
+    setStep(6);
+    // atualiza home
+    document.getElementById('pontoStatus').textContent = `Entrada às ${t}`;
+    document.getElementById('pontoStatus').style.color = 'var(--green)';
+    document.getElementById('pontoBtnHome').className = 'ponto-btn done';
+    document.getElementById('pontoBtnHome').innerHTML = '<i class="ti ti-check"></i>Entrada registrada';
+    document.getElementById('pontoBtnHome').disabled = true;
+  } else {
+    // erro
+    const dots = document.getElementById('pinDots').children;
+    Array.from(dots).forEach(d => d.classList.add('error'));
+    document.getElementById('pinAttempts').style.display = 'flex';
+    setTimeout(() => {
+      pinValue = '';
+      updatePinDots();
+    }, 800);
+  }
+}
+</script>
+</body>
+</html>

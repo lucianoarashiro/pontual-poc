@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — App Mobile</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #0f1117;
+  --s1:     #181c27;
+  --s2:     #1f2433;
+  --border: rgba(255,255,255,.08);
+  --accent: #4f8ef7;
+  --green:  #22c97a;
+  --amber:  #f5a623;
+  --red:    #f74f4f;
+  --text:   #e8eaf0;
+  --muted:  #7a8099;
+  --sans:   'Inter', sans-serif;
+  --mono:   'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--sans);
+  background: #080a10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 32px;
+  min-height: 100vh;
+  padding: 32px 24px;
+}
+
+/* ── PHONE ── */
+.phone {
+  width: 340px;
+  height: 700px;
+  background: var(--bg);
+  border-radius: 44px;
+  border: 2px solid rgba(255,255,255,.1);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,.7);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* notch */
+.notch {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 28px;
+  background: #000;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.notch-cam { width: 10px; height: 10px; border-radius: 50%; background: #1a1a1a; border: 1px solid #333; }
+.notch-face { width: 24px; height: 6px; border-radius: 3px; background: #1a1a1a; }
+
+/* status bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 36px 22px 8px;
+  flex-shrink: 0;
+}
+.status-time { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--text); }
+.status-icons { display: flex; gap: 5px; font-size: 12px; color: var(--text); }
+
+/* scroll */
+.phone-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.phone-scroll::-webkit-scrollbar { display: none; }
+
+/* ── SCREENS ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  padding: 16px 18px 24px;
+  min-height: 100%;
+  animation: fadeIn .2s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── HOME ── */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.home-greeting { font-size: 16px; font-weight: 500; color: var(--text); }
+.home-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #7c5cfc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+}
+
+.home-card {
+  background: var(--s1);
+  border: 0.5px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.ponto-time { font-size: 32px; font-weight: 500; color: var(--text); font-family: var(--mono); letter-spacing: -1.5px; }
+.ponto-escala { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.ponto-status { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* big ponto button */
+.ponto-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), #7c5cfc);
+  border: none;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .15s;
+}
+.ponto-btn:active { opacity: .85; transform: scale(.98); }
+.ponto-btn.secondary {
+  background: rgba(247,79,79,.15);
+  color: var(--red);
+  border: 0.5px solid rgba(247,79,79,.3);
+}
+.ponto-btn.done {
+  background: rgba(34,201,122,.1);
+  color: var(--green);
+  border: 0.5px solid rgba(34,201,122,.25);
+  cursor: default;
+}
+
+.mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.mini-card {
+  background: var(--s1);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.mini-val { font-size: 18px; font-weight: 500; font-family: var(--mono); color: var(--text); }
+.mini-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* semana */
+.week-card {
+  background: var(--s1);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 4px 0;
+}
+.week-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 12px;
+}
+.week-row:last-child { border-bottom: none; }
+.wd { color: var(--muted); min-width: 64px; }
+.wh { color: var(--text); font-family: var(--mono); font-size: 11px; flex: 1; margin-left: 6px; }
+.badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+.bOk { background: rgba(34,201,122,.12); color: var(--green); }
+.bToday { background: rgba(79,142,247,.12); color: var(--accent); }
+.bNext { background: rgba(255,255,255,.05); color: var(--muted); border: 0.5px solid var(--border); }
+
+/* ── DETECTING ── */
+.detect-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+/* pulse rings */
+.pulse-wrap {
+  position: relative;
+  width: 160px; height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 32px;
+}
+.pulse-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(79,142,247,.25);
+  animation: pulseOut 2s ease infinite;
+}
+.pulse-ring:nth-child(1) { width: 160px; height: 160px; animation-delay: 0s; }
+.pulse-ring:nth-child(2) { width: 130px; height: 130px; animation-delay: .3s; }
+.pulse-ring:nth-child(3) { width: 100px; height: 100px; animation-delay: .6s; }
+@keyframes pulseOut {
+  0%   { transform: scale(.9); opacity: 1; }
+  100% { transform: scale(1.15); opacity: 0; }
+}
+.pulse-core {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(79,142,247,.12);
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  color: var(--accent);
+  z-index: 1;
+}
+
+.det-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 8px; letter-spacing: -.3px; }
+.det-sub { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
+
+.signal-bar {
+  width: 200px;
+  height: 6px;
+  background: var(--s2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+.signal-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  width: 0%;
+  transition: width .4s ease;
+}
+
+.det-info {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.det-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.ghost-btn {
+  font-size: 13px;
+  color: var(--muted);
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all .15s;
+}
+.ghost-btn:active { color: var(--text); border-color: rgba(255,255,255,.2); }
+
+/* ── FACE ID ── */
+.face-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.face-frame {
+  width: 180px; height: 220px;
+  border-radius: 90px;
+  border: 2px solid var(--accent);
+  margin-bottom: 28px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--s2);
+  overflow: hidden;
+}
+.face-frame.scanning { border-color: var(--amber); }
+.face-frame.ok { border-color: var(--green); }
+
+.face-frame-corner {
+  position: absolute;
+  width: 24px; height: 24px;
+  border-color: var(--accent);
+  border-style: solid;
+}
+.face-frame-corner.tl { top: -1px; left: -1px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.face-frame-corner.tr { top: -1px; right: -1px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.face-frame-corner.bl { bottom: -1px; left: -1px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.face-frame-corner.br { bottom: -1px; right: -1px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+.face-icon { font-size: 64px; color: var(--muted); }
+.face-icon.scanning { color: var(--amber); }
+.face-icon.ok { color: var(--green); }
+
+.face-scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--amber) 30%, var(--amber) 70%, transparent);
+  animation: scanLine 1.8s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--amber);
+}
+@keyframes scanLine { 0%{top:5%} 100%{top:95%} }
+
+.face-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.face-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  transition: all .3s;
+}
+.face-dot.done { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px var(--green); }
+
+.face-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.face-sub { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 24px; }
+
+/* ── SUCCESS ── */
+.success-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.success-ring {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: rgba(34,201,122,.1);
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  color: var(--green);
+  margin-bottom: 24px;
+  animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+.success-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; letter-spacing: -.3px; }
+.success-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+.success-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34,201,122,.1);
+  border: 0.5px solid rgba(34,201,122,.25);
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--green);
+  margin-bottom: 12px;
+  font-family: var(--mono);
+}
+
+.receipt {
+  width: 100%;
+  background: var(--s1);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 8px;
+  text-align: left;
+}
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 5px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.receipt-row:last-child { border-bottom: none; }
+.receipt-label { color: var(--muted); }
+.receipt-val { color: var(--text); font-family: var(--mono); }
+
+/* ── LABELS ── */
+.sec-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* notification banner */
+.notif {
+  position: absolute;
+  top: 60px; left: 14px; right: 14px;
+  background: var(--s1);
+  border: 0.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 20;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  animation: slideDown .3s cubic-bezier(.34,1.2,.64,1);
+  cursor: pointer;
+}
+@keyframes slideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+.notif-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(79,142,247,.15);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 18px; flex-shrink: 0;
+}
+.notif-title { font-size: 12px; font-weight: 500; color: var(--text); }
+.notif-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.notif-action { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: 500; }
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<div class="phone" id="phone">
+  <div class="notch">
+    <div class="notch-cam"></div>
+    <div class="notch-face"></div>
+    <div class="notch-cam"></div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="status-time" id="statusTime">08:14</div>
+    <div class="status-icons">
+      <i class="ti ti-bluetooth" style="color:#4f8ef7"></i>
+      <i class="ti ti-wifi"></i>
+      <i class="ti ti-battery-3"></i>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION BANNER (hidden) -->
+  <div class="notif" id="notifBanner" style="display:none" onclick="abrirDetectando()">
+    <div class="notif-icon"><i class="ti ti-bluetooth"></i></div>
+    <div>
+      <div class="notif-title">Pontual</div>
+      <div class="notif-sub">Totem detectado — Portaria Principal</div>
+      <div class="notif-action">Toque para registrar ponto →</div>
+    </div>
+  </div>
+
+  <!-- SCROLL AREA -->
+  <div class="phone-scroll">
+
+    <!-- HOME -->
+    <div class="screen active" id="screen-home">
+      <div class="home-header">
+        <div>
+          <div class="home-greeting">Bom dia, Luciano</div>
+          <div class="home-sub" id="homeDate">—</div>
+        </div>
+        <div class="avatar">LC</div>
+      </div>
+
+      <div class="home-card">
+        <div class="ponto-time" id="homeClock">--:--</div>
+        <div class="ponto-escala">Escala hoje: 08:00 – 17:00</div>
+        <div class="ponto-status" id="pontoStatus">Entrada ainda não registrada</div>
+        <button class="ponto-btn" id="pontoBtnHome" onclick="iniciarFluxo()">
+          <i class="ti ti-clock"></i>Registrar entrada
+        </button>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <div class="mini-val" style="color:var(--green)">+6h 20m</div>
+          <div class="mini-lbl">Banco de horas</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-val">22 / 22</div>
+          <div class="mini-lbl">Dias trabalhados</div>
+        </div>
+      </div>
+
+      <div class="sec-label">Semana atual</div>
+      <div class="week-card">
+        <div class="week-row"><span class="wd">Seg 09/06</span><span class="wh">08:00–17:00</span><span class="badge bOk">Concluído</span></div>
+        <div class="week-row"><span class="wd">Ter 10/06</span><span class="wh">08:00–17:00</span><span class="badge bOk">Concluído</span></div>
+        <div class="week-row"><span class="wd">Qua 11/06</span><span class="wh">08:00–17:00</span><span class="badge bOk">Concluído</span></div>
+        <div class="week-row" style="background:rgba(79,142,247,.06);border-radius:8px;margin:2px 4px;padding:9px 10px">
+          <span class="wd" style="color:var(--accent)">Qui 12/06</span>
+          <span class="wh" style="color:var(--accent)">08:00–17:00</span>
+          <span class="badge bToday">Hoje</span>
+        </div>
+        <div class="week-row"><span class="wd">Sex 13/06</span><span class="wh">08:00–14:00</span><span class="badge bNext">Amanhã</span></div>
+      </div>
+    </div>
+
+    <!-- DETECTANDO TOTEM -->
+    <div class="screen" id="screen-detecting">
+      <div class="detect-screen">
+        <div class="pulse-wrap">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-core"><i class="ti ti-bluetooth"></i></div>
+        </div>
+        <div class="det-title">Totem detectado</div>
+        <div class="det-sub">Portaria Principal · 3 metros de distância<br>Aproximando para confirmar...</div>
+        <div class="signal-bar">
+          <div class="signal-fill" id="signalFill"></div>
+        </div>
+        <div class="det-info">
+          <div class="det-dot"></div>
+          <span id="detInfo">Conectando ao totem...</span>
+        </div>
+        <button class="ghost-btn" onclick="goTo('screen-home')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- FACE ID -->
+    <div class="screen" id="screen-faceid">
+      <div class="face-screen">
+        <div class="face-frame" id="faceFrame">
+          <div class="face-frame-corner tl"></div>
+          <div class="face-frame-corner tr"></div>
+          <div class="face-frame-corner bl"></div>
+          <div class="face-frame-corner br"></div>
+          <i class="ti ti-user face-icon" id="faceIcon"></i>
+          <div class="face-scan-line" id="scanLine" style="display:none"></div>
+        </div>
+        <div class="face-dots" id="faceDots">
+          <div class="face-dot"></div>
+          <div class="face-dot"></div>
+          <div class="face-dot"></div>
+          <div class="face-dot"></div>
+          <div class="face-dot"></div>
+        </div>
+        <div class="face-title" id="faceTitle">Confirme sua identidade</div>
+        <div class="face-sub" id="faceSub">Olhe para a câmera para confirmar o registro de ponto</div>
+        <button class="ghost-btn" onclick="goTo('screen-home')" id="faceCancelBtn">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="screen" id="screen-success">
+      <div class="success-screen">
+        <div class="success-ring"><i class="ti ti-check"></i></div>
+        <div class="success-title" id="successTitle">Entrada registrada!</div>
+        <div class="success-sub">Identidade confirmada via Face ID</div>
+        <div class="success-pill">
+          <i class="ti ti-clock"></i>
+          <span id="successTime">08:14</span>
+        </div>
+        <div class="receipt" id="successReceipt">
+          <div class="receipt-row"><span class="receipt-label">Colaborador</span><span class="receipt-val">Luciano Costa</span></div>
+          <div class="receipt-row"><span class="receipt-label">Matrícula</span><span class="receipt-val">48210</span></div>
+          <div class="receipt-row"><span class="receipt-label">Totem</span><span class="receipt-val">Portaria Principal</span></div>
+          <div class="receipt-row"><span class="receipt-label">Método</span><span class="receipt-val">BT + Face ID</span></div>
+          <div class="receipt-row"><span class="receipt-label">Protocolo</span><span class="receipt-val">#PT-2025-0891</span></div>
+        </div>
+        <button class="ponto-btn done" style="margin-top:16px;width:100%;max-width:280px" onclick="goHome()">
+          <i class="ti ti-home"></i>Voltar ao início
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LEGENDA DO FLUXO -->
+<div style="display:flex;flex-direction:column;gap:12px;max-width:200px;padding-top:40px">
+  <div style="font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px">Fluxo</div>
+
+  <div class="step-item" id="step1" onclick="goTo('screen-home');resetFluxo()" style="cursor:pointer">
+    <div class="step-num active" id="stepnum1">1</div>
+    <div>
+      <div class="step-title">App em segundo plano</div>
+      <div class="step-sub">Colaborador chega na empresa</div>
+    </div>
+  </div>
+
+  <div class="step-item" id="step2">
+    <div class="step-num" id="stepnum2">2</div>
+    <div>
+      <div class="step-title">Notificação automática</div>
+      <div class="step-sub">Bluetooth detecta o totem</div>
+    </div>
+  </div>
+
+  <div class="step-item" id="step3">
+    <div class="step-num" id="stepnum3">3</div>
+    <div>
+      <div class="step-title">Confirmação de proximidade</div>
+      <div class="step-sub">Sinal forte o suficiente</div>
+    </div>
+  </div>
+
+  <div class="step-item" id="step4">
+    <div class="step-num" id="stepnum4">4</div>
+    <div>
+      <div class="step-title">Face ID</div>
+      <div class="step-sub">Identidade confirmada</div>
+    </div>
+  </div>
+
+  <div class="step-item" id="step5">
+    <div class="step-num" id="stepnum5">5</div>
+    <div>
+      <div class="step-title">Ponto registrado</div>
+      <div class="step-sub">Comprovante gerado</div>
+    </div>
+  </div>
+
+  <button onclick="iniciarFluxoCompleto()" style="margin-top:16px;padding:10px 16px;border-radius:10px;background:rgba(79,142,247,.15);border:0.5px solid rgba(79,142,247,.3);color:#4f8ef7;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:6px;justify-content:center">
+    <i class="ti ti-play"></i>Simular fluxo completo
+  </button>
+  <button onclick="goTo('screen-home');resetFluxo()" style="padding:8px 16px;border-radius:10px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:rgba(255,255,255,.3);font-size:12px;cursor:pointer;font-family:var(--sans)">
+    Reiniciar
+  </button>
+</div>
+
+<style>
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  opacity: .3;
+  transition: opacity .3s;
+}
+.step-item.active { opacity: 1; }
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--s1);
+  border: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500;
+  color: rgba(255,255,255,.3);
+  flex-shrink: 0;
+  transition: all .3s;
+}
+.step-num.active { background: rgba(79,142,247,.2); border-color: rgba(79,142,247,.5); color: #4f8ef7; }
+.step-num.done { background: rgba(34,201,122,.15); border-color: rgba(34,201,122,.4); color: var(--green); }
+.step-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.7); }
+.step-sub { font-size: 11px; color: rgba(255,255,255,.3); margin-top: 2px; }
+</style>
+
+<script>
+let pontoBatido = 0;
+let fluxoRunning = false;
+
+// RELÓGIO
+function tick() {
+  const t = new Date();
+  const ts = t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('statusTime').textContent = ts;
+  document.getElementById('homeClock').textContent = ts;
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  document.getElementById('homeDate').textContent = `${dias[t.getDay()]}, ${t.getDate()} ${meses[t.getMonth()]}`;
+}
+setInterval(tick, 1000);
+tick();
+
+// NAVEGAÇÃO
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// STEP INDICATORS
+function setStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    const item = document.getElementById('step' + i);
+    const num = document.getElementById('stepnum' + i);
+    if (i < n) {
+      item.classList.add('active');
+      num.className = 'step-num done';
+      num.textContent = '✓';
+    } else if (i === n) {
+      item.classList.add('active');
+      num.className = 'step-num active';
+      num.textContent = i;
+    } else {
+      item.classList.remove('active');
+      num.className = 'step-num';
+      num.textContent = i;
+    }
+  }
+}
+
+function resetFluxo() {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('step' + i).classList.remove('active');
+    document.getElementById('stepnum' + i).className = 'step-num';
+    document.getElementById('stepnum' + i).textContent = i;
+  }
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('stepnum1').className = 'step-num active';
+  document.getElementById('notifBanner').style.display = 'none';
+  document.getElementById('signalFill').style.width = '0%';
+  fluxoRunning = false;
+}
+
+// FLUXO MANUAL (botão home)
+function iniciarFluxo() {
+  if (fluxoRunning) return;
+  iniciarFluxoCompleto();
+}
+
+// FLUXO COMPLETO AUTOMÁTICO
+function iniciarFluxoCompleto() {
+  if (fluxoRunning) return;
+  fluxoRunning = true;
+  resetFluxo();
+  goTo('screen-home');
+
+  // Step 1 — app em segundo plano
+  setStep(1);
+
+  // Step 2 — notificação bluetooth
+  setTimeout(() => {
+    setStep(2);
+    const notif = document.getElementById('notifBanner');
+    notif.style.display = 'flex';
+  }, 1000);
+
+  // Step 3 — abre detectando ao tocar
+  setTimeout(() => {
+    document.getElementById('notifBanner').style.display = 'none';
+    setStep(3);
+    goTo('screen-detecting');
+    animarSinal();
+  }, 2800);
+
+  // Step 4 — face ID
+  setTimeout(() => {
+    setStep(4);
+    goTo('screen-faceid');
+    iniciarFaceID();
+  }, 5200);
+
+  // Step 5 — success
+  setTimeout(() => {
+    setStep(5);
+    const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('successTime').textContent = t;
+    goTo('screen-success');
+    atualizarHome();
+    fluxoRunning = false;
+  }, 8000);
+}
+
+function abrirDetectando() {
+  document.getElementById('notifBanner').style.display = 'none';
+  setStep(3);
+  goTo('screen-detecting');
+  animarSinal();
+  setTimeout(() => {
+    setStep(4);
+    goTo('screen-faceid');
+    iniciarFaceID();
+  }, 2400);
+  setTimeout(() => {
+    setStep(5);
+    const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('successTime').textContent = t;
+    goTo('screen-success');
+    atualizarHome();
+    fluxoRunning = false;
+  }, 5200);
+}
+
+// ANIMAÇÃO SINAL
+function animarSinal() {
+  const fill = document.getElementById('signalFill');
+  const msgs = ['Conectando ao totem...', 'Sinal forte detectado', 'Proximidade confirmada ✓'];
+  let idx = 0;
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.width = '40%'; document.getElementById('detInfo').textContent = msgs[0]; }, 100);
+  setTimeout(() => { fill.style.width = '70%'; document.getElementById('detInfo').textContent = msgs[1]; }, 800);
+  setTimeout(() => { fill.style.width = '100%'; document.getElementById('detInfo').textContent = msgs[2]; }, 1600);
+}
+
+// FACE ID ANIMATION
+function iniciarFaceID() {
+  const frame = document.getElementById('faceFrame');
+  const icon = document.getElementById('faceIcon');
+  const scanLine = document.getElementById('scanLine');
+  const dots = document.getElementById('faceDots').children;
+  const title = document.getElementById('faceTitle');
+  const sub = document.getElementById('faceSub');
+
+  // reset
+  frame.className = 'face-frame';
+  icon.className = 'ti ti-user face-icon';
+  scanLine.style.display = 'none';
+  Array.from(dots).forEach(d => d.classList.remove('done'));
+  title.textContent = 'Confirme sua identidade';
+  sub.textContent = 'Olhe para a câmera para confirmar o registro de ponto';
+
+  // scanning
+  setTimeout(() => {
+    frame.className = 'face-frame scanning';
+    icon.className = 'ti ti-user face-icon scanning';
+    scanLine.style.display = 'block';
+    title.textContent = 'Reconhecendo...';
+    sub.textContent = 'Mantenha o rosto centralizado';
+  }, 300);
+
+  // pontos acendendo
+  setTimeout(() => { dots[0].classList.add('done'); }, 700);
+  setTimeout(() => { dots[1].classList.add('done'); }, 1000);
+  setTimeout(() => { dots[2].classList.add('done'); }, 1300);
+  setTimeout(() => { dots[3].classList.add('done'); }, 1600);
+  setTimeout(() => {
+    dots[4].classList.add('done');
+    frame.className = 'face-frame ok';
+    icon.className = 'ti ti-check face-icon ok';
+    scanLine.style.display = 'none';
+    title.textContent = 'Identidade confirmada';
+    sub.textContent = 'Registrando ponto...';
+  }, 1900);
+}
+
+// HOME UPDATE
+function atualizarHome() {
+  pontoBatido++;
+  const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  const status = document.getElementById('pontoStatus');
+  const btn = document.getElementById('pontoBtnHome');
+  if (pontoBatido === 1) {
+    status.textContent = `Entrada às ${t}`;
+    status.style.color = 'var(--green)';
+    btn.className = 'ponto-btn secondary';
+    btn.innerHTML = '<i class="ti ti-clock-off"></i>Registrar saída';
+  } else {
+    status.textContent = `Saída às ${t}`;
+    btn.className = 'ponto-btn done';
+    btn.innerHTML = '<i class="ti ti-check"></i>Saída registrada';
+    btn.disabled = true;
+  }
+}
+
+function goHome() {
+  goTo('screen-home');
+}
+</script>
+</body>
+</html>

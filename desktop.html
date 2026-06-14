@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — Gestão de Ponto</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1f2433;
+    --border:    #2a3040;
+    --accent:    #4f8ef7;
+    --accent2:   #7c5cfc;
+    --green:     #22c97a;
+    --amber:     #f5a623;
+    --red:       #f74f4f;
+    --text:      #e8eaf0;
+    --muted:     #7a8099;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOPBAR ─────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+
+  .topbar-center {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tab {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+    border: none;
+    background: none;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { color: var(--text); background: var(--surface2); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  /* ── MAIN LAYOUT ────────────────────────── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ────────────────────────────── */
+  .sidebar {
+    width: 52px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .side-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all .15s;
+    border: none; background: none;
+    font-size: 16px;
+  }
+  .side-btn:hover { color: var(--text); background: var(--surface2); }
+  .side-btn.active { color: var(--accent); background: rgba(79,142,247,.12); }
+
+  /* ── DASHBOARD PANEL ────────────────────── */
+  .dashboard {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-right: 1px solid var(--border);
+    min-width: 0;
+  }
+
+  .dashboard::-webkit-scrollbar { width: 4px; }
+  .dashboard::-webkit-scrollbar-track { background: transparent; }
+  .dashboard::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  /* cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .card-sm {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* ponto button */
+  .ponto-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .ponto-btn:hover { opacity: .9; transform: translateY(-1px); }
+  .ponto-btn:active { transform: translateY(0); }
+
+  .ponto-time {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+
+  .ponto-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* banco de horas */
+  .bar-track {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .5s ease;
+  }
+
+  /* alertas */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .alert:hover { opacity: .85; }
+  .alert.warn { background: rgba(245,166,35,.08); border: 1px solid rgba(245,166,35,.2); }
+  .alert.danger { background: rgba(247,79,79,.08); border: 1px solid rgba(247,79,79,.2); }
+  .alert.info { background: rgba(79,142,247,.08); border: 1px solid rgba(79,142,247,.2); }
+
+  .alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .alert-text { color: var(--text); }
+  .alert-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* escala */
+  .escala-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .escala-row:last-child { border-bottom: none; }
+
+  .tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .tag.green { background: rgba(34,201,122,.15); color: var(--green); }
+  .tag.amber { background: rgba(245,166,35,.15); color: var(--amber); }
+  .tag.blue  { background: rgba(79,142,247,.15);  color: var(--accent); }
+  .tag.red   { background: rgba(247,79,79,.15);   color: var(--red); }
+
+  /* metric */
+  .metric-val {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+  }
+  .metric-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .metric-delta { font-size: 10px; margin-top: 4px; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* ── CHAT PANEL ─────────────────────────── */
+  .chat-panel {
+    width: 380px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+  }
+
+  .chat-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bot-avatar {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+
+  .chat-title { font-size: 13px; font-weight: 600; }
+  .chat-sub { font-size: 11px; color: var(--green); }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 88%;
+  }
+  .msg.bot { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+
+  .msg-bubble {
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .msg.bot .msg-bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    color: var(--text);
+  }
+  .msg.user .msg-bubble {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 4px;
+  }
+  .msg.user .msg-time { text-align: right; }
+
+  /* inline card no chat */
+  .chat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 4px;
+    font-size: 12px;
+  }
+  .chat-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .chat-card-row:last-child { border-bottom: none; }
+
+  /* quick actions */
+  .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 16px 0;
+  }
+
+  .quick-btn {
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: var(--sans);
+  }
+  .quick-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* input */
+  .chat-input-area {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--text);
+    resize: none;
+    outline: none;
+    transition: border-color .15s;
+    line-height: 1.4;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 15px;
+    transition: opacity .15s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { opacity: .85; }
+
+  /* highlight pulse no dashboard */
+  @keyframes pulse-border {
+    0%, 100% { border-color: var(--border); }
+    50% { border-color: var(--accent); box-shadow: 0 0 12px rgba(79,142,247,.2); }
+  }
+  .highlight { animation: pulse-border 2s ease 1; }
+
+  /* typing indicator */
+  .typing { display: flex; gap: 4px; align-items: center; padding: 8px 4px; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--muted);
+    animation: bounce .9s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-5px); }
+  }
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">pont<span>.</span>ual</div>
+  <div class="topbar-center">
+    <button class="tab active">Meu Ponto</button>
+    <button class="tab">Equipe</button>
+    <button class="tab">Integrações</button>
+    <button class="tab">Relatórios</button>
+  </div>
+  <div class="topbar-right">
+    <div class="status-dot"></div>
+    <span style="font-size:12px;color:var(--muted)">Sistemas OK</span>
+    <div class="avatar">LC</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <button class="side-btn active" title="Início">⊞</button>
+    <button class="side-btn" title="Calendário">◫</button>
+    <button class="side-btn" title="Alertas">◎</button>
+    <button class="side-btn" title="Colaboradores">⊹</button>
+    <div style="flex:1"></div>
+    <button class="side-btn" title="Configurações">⚙</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+
+    <!-- Registro de ponto -->
+    <div>
+      <div class="section-label">Registro de hoje</div>
+      <div class="card" style="display:flex;align-items:center;gap:20px">
+        <div style="flex:1">
+          <div class="ponto-time" id="relogio">--:--:--</div>
+          <div class="ponto-label">Seg, 09 Jun 2025 · Entrada às 08:02</div>
+        </div>
+        <button class="ponto-btn" style="width:auto;padding:10px 20px" onclick="baterPonto()">
+          ⏱ Registrar saída
+        </button>
+      </div>
+    </div>
+
+    <!-- Métricas -->
+    <div class="grid3">
+      <div class="card-sm">
+        <div class="metric-val" style="color:var(--green)">+6h 20m</div>
+        <div class="metric-label">Banco de horas</div>
+        <div class="metric-delta up">↑ 2h esta semana</div>
+      </div>
+      <div class="card-sm">
+        <div class="metric-val">22</div>
+        <div class="metric-label">Dias trabalhados</div>
+        <div class="metric-delta" style="color:var(--muted)">de 22 úteis</div>
+      </div>
+      <div class="card-sm">
+        <div class="metric-val" style="color:var(--amber)">1</div>
+        <div class="metric-label">Ajuste pendente</div>
+        <div class="metric-delta down">Requer ação</div>
+      </div>
+    </div>
+
+    <!-- Banco de horas detalhe -->
+    <div class="card" id="card-banco">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-label" style="margin:0">Banco de horas — Junho</div>
+        <span class="tag green">+6h 20m</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Meta mensal: 176h · Realizado: 182h 20m</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--accent),var(--green))"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
+        <div style="font-size:11px">
+          <div style="color:var(--muted)">Extras</div>
+          <div style="font-family:var(--mono);font-size:13px;margin-top:2px">8h 40m</div>
+        </div>
+        <div style="font-size:11px">
+          <div style="color:var(--muted)">Compensadas</div>
+          <div style="font-family:var(--mono);font-size:13px;margin-top:2px">2h 20m</div>
+        </div>
+        <div style="font-size:11px">
+          <div style="color:var(--muted)">Saldo</div>
+          <div style="font-family:var(--mono);font-size:13px;margin-top:2px;color:var(--green)">+6h 20m</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div>
+      <div class="section-label">Alertas ativos</div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="alertas">
+        <div class="alert warn" onclick="alertClick('ajuste')">
+          <div class="alert-icon">⚠</div>
+          <div>
+            <div class="alert-text">Ajuste de ponto pendente — 05/06</div>
+            <div class="alert-sub">Marcação de saída ausente · Aguardando aprovação do gestor</div>
+          </div>
+        </div>
+        <div class="alert danger" onclick="alertClick('rubrica')">
+          <div class="alert-icon">✕</div>
+          <div>
+            <div class="alert-text">Divergência de rubrica detectada</div>
+            <div class="alert-sub">OiTchau × SAP ECP — 3 colaboradores afetados</div>
+          </div>
+        </div>
+        <div class="alert info" onclick="alertClick('headcount')">
+          <div class="alert-icon">ℹ</div>
+          <div>
+            <div class="alert-text">Equalização de headcount concluída</div>
+            <div class="alert-sub">SFSF EC · OiTchau · SAP HCM — todos sincronizados</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Escala da semana -->
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px">Escala desta semana</div>
+      <div class="escala-row">
+        <span style="font-size:12px;color:var(--muted)">Seg 09/06</span>
+        <span style="font-size:12px">08:00 – 17:00</span>
+        <span class="tag green">OK</span>
+      </div>
+      <div class="escala-row">
+        <span style="font-size:12px;color:var(--muted)">Ter 10/06</span>
+        <span style="font-size:12px">08:00 – 17:00</span>
+        <span class="tag green">OK</span>
+      </div>
+      <div class="escala-row">
+        <span style="font-size:12px;color:var(--muted)">Qua 11/06</span>
+        <span style="font-size:12px">08:00 – 17:00</span>
+        <span class="tag amber">Ajuste</span>
+      </div>
+      <div class="escala-row">
+        <span style="font-size:12px;color:var(--muted)">Qui 12/06</span>
+        <span style="font-size:12px">08:00 – 17:00</span>
+        <span class="tag blue">Hoje</span>
+      </div>
+      <div class="escala-row">
+        <span style="font-size:12px;color:var(--muted)">Sex 13/06</span>
+        <span style="font-size:12px">08:00 – 14:00</span>
+        <span class="tag blue">Amanhã</span>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+  <!-- CHAT PANEL -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="bot-avatar">✦</div>
+      <div>
+        <div class="chat-title">Assistente Pontual</div>
+        <div class="chat-sub">● online agora</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+
+      <div class="msg bot">
+        <div class="msg-bubble">
+          Oi, Luciano! Tudo certo por aqui. 👋<br><br>
+          Você tem <strong>1 ajuste pendente</strong> de aprovação e detectei uma <strong>divergência de rubrica</strong> entre OiTchau e SAP ECP em 3 colaboradores.<br><br>
+          Como posso ajudar?
+        </div>
+        <div class="msg-time">08:05</div>
+      </div>
+
+      <div class="msg user">
+        <div class="msg-bubble">Quais colaboradores têm divergência de rubrica?</div>
+        <div class="msg-time">08:07</div>
+      </div>
+
+      <div class="msg bot">
+        <div class="msg-bubble">
+          Encontrei 3 colaboradores classificados como <strong>bate-ponto</strong> no SFSF/ECP que não receberam rubricas de ponto da OiTchau neste período:
+          <div class="chat-card">
+            <div class="chat-card-row">
+              <span style="color:var(--muted)">Colaborador</span>
+              <span style="color:var(--muted)">Situação</span>
+            </div>
+            <div class="chat-card-row">
+              <span>Ana Ferreira · Mat. 4821</span>
+              <span class="tag red">Sem rubrica</span>
+            </div>
+            <div class="chat-card-row">
+              <span>Carlos Mota · Mat. 3904</span>
+              <span class="tag red">Sem rubrica</span>
+            </div>
+            <div class="chat-card-row">
+              <span>Priya Singh · Mat. 5102</span>
+              <span class="tag amber">Rubrica incorreta</span>
+            </div>
+          </div>
+          Quer que eu abra um chamado de correção para os três?
+        </div>
+        <div class="msg-time">08:07</div>
+      </div>
+
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-actions" id="quickActions">
+      <button class="quick-btn" onclick="quickSend('Abre chamado para os três')">Abrir chamado</button>
+      <button class="quick-btn" onclick="quickSend('Mostra meu banco de horas')">Banco de horas</button>
+      <button class="quick-btn" onclick="quickSend('Quero justificar minha falta do dia 05')">Justificar falta</button>
+      <button class="quick-btn" onclick="quickSend('Status das integrações')">Status integrações</button>
+    </div>
+
+    <div class="chat-input-area">
+      <textarea
+        class="chat-input"
+        id="chatInput"
+        rows="1"
+        placeholder="Pergunte ou peça uma ação..."
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div><!-- /chat-panel -->
+
+</div><!-- /main -->
+
+<script>
+// Relógio
+function updateClock() {
+  const now = new Date();
+  document.getElementById('relogio').textContent =
+    now.toLocaleTimeString('pt-BR');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Bater ponto
+function baterPonto() {
+  const btn = document.querySelector('.ponto-btn');
+  btn.textContent = '✓ Saída registrada às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  btn.style.background = 'rgba(34,201,122,.2)';
+  btn.style.color = 'var(--green)';
+  btn.style.border = '1px solid rgba(34,201,122,.3)';
+  btn.disabled = true;
+  addBotMessage('Saída registrada com sucesso! Você trabalhou <strong>8h 54m</strong> hoje. Bom descanso! 👋');
+}
+
+// Clique em alerta
+function alertClick(tipo) {
+  const msgs = {
+    ajuste: 'Você quer regularizar o ajuste do dia 05/06? A marcação de saída estava ausente. Posso enviar para aprovação do seu gestor agora.',
+    rubrica: 'Mostrando a divergência de rubrica detectada entre OiTchau e SAP ECP. São 3 colaboradores afetados — já listei acima. Quer abrir um chamado?',
+    headcount: 'Equalização de headcount concluída com sucesso. SFSF EC, OiTchau e SAP HCM estão todos sincronizados. Nenhuma divergência encontrada.'
+  };
+  highlightCard('card-banco');
+  addBotMessage(msgs[tipo]);
+  scrollChat();
+}
+
+// Highlight
+function highlightCard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('highlight');
+  void el.offsetWidth;
+  el.classList.add('highlight');
+}
+
+// Mensagens do chat
+const respostas = {
+  'Abre chamado para os três': 'Chamado aberto! Protocolo <strong>#PT-2024-0891</strong>. O time de RH foi notificado e tem até <strong>amanhã às 18h</strong> para corrigir as rubricas antes do fechamento do período.',
+  'Mostra meu banco de horas': 'Seu saldo de banco de horas em junho é de <strong>+6h 20m</strong>. Você fez 8h40m de horas extras e compensou 2h20m. O painel ao lado foi atualizado com o detalhamento.',
+  'Quero justificar minha falta do dia 05': 'Claro! Você pode justificar como: (1) Atestado médico, (2) Declaração de comparecimento, (3) Outro motivo. Qual é o motivo da ausência no dia 05/06?',
+  'Status das integrações': 'Todos os sistemas estão operacionais agora:\n\n✅ SFSF EC → OiTchau: sincronizado\n✅ SAP ECP → OiTchau: sincronizado\n✅ SST → OiTchau: sincronizado\n⚠ Última divergência detectada: há 2h (rubricas — em tratamento)'
+};
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  msgs.innerHTML += `
+    <div class="msg user">
+      <div class="msg-bubble">${text}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  scrollChat();
+}
+
+function addTyping() {
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `
+    <div class="msg bot" id="typing">
+      <div class="msg-bubble">
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>
+    </div>`;
+  scrollChat();
+}
+
+function addBotMessage(text) {
+  const typing = document.getElementById('typing');
+  if (typing) typing.remove();
+  const msgs = document.getElementById('chatMessages');
+  const time = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  msgs.innerHTML += `
+    <div class="msg bot">
+      <div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>
+      <div class="msg-time">${time}</div>
+    </div>`;
+  scrollChat();
+}
+
+function scrollChat() {
+  const msgs = document.getElementById('chatMessages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  addUserMessage(text);
+  addTyping();
+  setTimeout(() => {
+    const resp = respostas[text] || 'Entendido! Estou verificando isso para você nos sistemas integrados...';
+    addBotMessage(resp);
+    if (text === 'Mostra meu banco de horas') highlightCard('card-banco');
+  }, 900);
+}
+
+function quickSend(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+</script>
+</body>
+</html>

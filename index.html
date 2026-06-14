@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — POC Navegável</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c12;--s1:#13161f;--s2:#1a1e2a;--s3:#222736;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --accent:#4f8ef7;--green:#22c97a;--amber:#f5a623;--purple:#7c5cfc;--red:#f74f4f;
+  --text:#e8eaf0;--muted:#7a8099;--hint:#3d4257;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{font-family:var(--mono);font-size:16px;font-weight:500;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.nav-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(79,142,247,.1);color:var(--accent);border:0.5px solid rgba(79,142,247,.2);font-weight:500}
+
+/* ── HERO ── */
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 32px 48px;text-align:center;position:relative;overflow:hidden}
+.hero-glow{position:absolute;width:600px;height:300px;background:radial-gradient(ellipse,rgba(79,142,247,.08) 0%,transparent 70%);top:0;left:50%;transform:translateX(-50%);pointer-events:none}
+.hero-label{font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.hero-title{font-size:48px;font-weight:700;letter-spacing:-2px;line-height:1.1;margin-bottom:16px;max-width:640px}
+.hero-title span{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:520px;line-height:1.6;margin-bottom:40px}
+.hero-stats{display:flex;gap:32px;justify-content:center;padding:20px 40px;background:var(--s1);border:0.5px solid var(--border);border-radius:16px}
+.stat{text-align:center}
+.stat-val{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* ── FLOWS ── */
+.flows{padding:0 32px 80px;max-width:1100px;margin:0 auto;width:100%}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.section-title{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.section-line{flex:1;height:0.5px;background:var(--border)}
+
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:48px}
+
+.flow-card{background:var(--s1);border:0.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden}
+.flow-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 60%,rgba(255,255,255,.02));pointer-events:none}
+.flow-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.flow-card:active{transform:translateY(0)}
+
+.flow-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.flow-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.flow-icon.blue{background:rgba(79,142,247,.12);color:var(--accent)}
+.flow-icon.green{background:rgba(34,201,122,.12);color:var(--green)}
+.flow-icon.amber{background:rgba(245,166,35,.12);color:var(--amber)}
+.flow-icon.purple{background:rgba(124,92,252,.12);color:var(--purple)}
+.flow-icon.red{background:rgba(247,79,79,.12);color:var(--red)}
+
+.flow-arrow{font-size:16px;color:var(--hint);transition:color .2s}
+.flow-card:hover .flow-arrow{color:var(--accent)}
+
+.flow-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.flow-sub{font-size:12px;color:var(--muted);line-height:1.5}
+
+.flow-tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.tag-blue{background:rgba(79,142,247,.1);color:var(--accent);border:0.5px solid rgba(79,142,247,.2)}
+.tag-green{background:rgba(34,201,122,.1);color:var(--green);border:0.5px solid rgba(34,201,122,.2)}
+.tag-amber{background:rgba(245,166,35,.1);color:var(--amber);border:0.5px solid rgba(245,166,35,.2)}
+.tag-purple{background:rgba(124,92,252,.1);color:var(--purple);border:0.5px solid rgba(124,92,252,.2)}
+.tag-muted{background:rgba(255,255,255,.04);color:var(--muted);border:0.5px solid var(--border)}
+
+/* ── FOOTER ── */
+footer{margin-top:auto;padding:20px 32px;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.footer-text{font-size:12px;color:var(--hint)}
+.footer-badge{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.footer-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">pont<span>.</span>ual</div>
+  <div class="nav-badge">POC Navegável · v0.2</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-label">Proof of Concept</div>
+  <h1 class="hero-title">Gestão de ponto para o <span>ecossistema SAP cloud</span></h1>
+  <p class="hero-sub">Interface conversacional, coleta sem toque, motor de cálculo flexível e observabilidade nativa. Explore os fluxos abaixo.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">8</div><div class="stat-label">Protótipos</div></div>
+    <div class="stat"><div class="stat-val">3</div><div class="stat-label">Perfis de usuário</div></div>
+    <div class="stat"><div class="stat-val">100%</div><div class="stat-label">Sem toque</div></div>
+    <div class="stat"><div class="stat-val">REP-P</div><div class="stat-label">Portaria 671</div></div>
+  </div>
+</div>
+
+<div class="flows">
+
+  <!-- COLABORADOR -->
+  <div class="section-header">
+    <div class="section-title">Colaborador</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="flow-grid">
+
+    <a class="flow-card" href="mobile-home.html">
+      <div class="flow-card-header">
+        <div class="flow-icon blue"><i class="ti ti-device-mobile"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">App do Colaborador</div>
+        <div class="flow-sub">Interface conversacional com painel adaptável. Banco de horas, escala da semana, ajuste de ponto e envio de atestado.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-blue">Chat + Dashboard</span>
+        <span class="tag tag-green">Adaptive UI</span>
+        <span class="tag tag-muted">Mobile</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="mobile-faceid.html">
+      <div class="flow-card-header">
+        <div class="flow-icon green"><i class="ti ti-bluetooth"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Marcação — Bluetooth + Face ID</div>
+        <div class="flow-sub">Fluxo completo de registro de ponto. Bluetooth detecta o totem, Face ID confirma a identidade. Sem toque em nenhum equipamento.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-green">Bluetooth</span>
+        <span class="tag tag-blue">Face ID</span>
+        <span class="tag tag-muted">Antifraude</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="mobile-pin.html">
+      <div class="flow-card-header">
+        <div class="flow-icon amber"><i class="ti ti-keyboard"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Fallback — Face ID Falhou</div>
+        <div class="flow-sub">Quando Face ID não reconhece (EPI, máscara, luz ruim) — duas tentativas, depois PIN de 4 dígitos. Método registrado no log de auditoria.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-amber">Fallback PIN</span>
+        <span class="tag tag-muted">EPI</span>
+        <span class="tag tag-muted">Auditoria</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- TOTEM -->
+  <div class="section-header">
+    <div class="section-title">Totem</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="flow-grid">
+
+    <a class="flow-card" href="totem.html">
+      <div class="flow-card-header">
+        <div class="flow-icon purple"><i class="ti ti-device-tablet"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Totem de Ponto</div>
+        <div class="flow-sub">Tablet fixo na entrada. Marcação em massa via Bluetooth, QR Code ou matrícula + PIN para quem não tem celular. Modo offline incluído.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-purple">REP-P</span>
+        <span class="tag tag-green">Offline</span>
+        <span class="tag tag-muted">Sem fila</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- RH -->
+  <div class="section-header">
+    <div class="section-title">RH / Gestão</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="flow-grid">
+
+    <a class="flow-card" href="desktop.html">
+      <div class="flow-card-header">
+        <div class="flow-icon blue"><i class="ti ti-layout-sidebar"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Interface RH — Chat + Painel</div>
+        <div class="flow-sub">Dashboard adaptável com assistente conversacional. Banco de horas, ajuste de ponto, atestados e escala. O painel troca de contexto conforme o chat.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-blue">Adaptive UI</span>
+        <span class="tag tag-green">Chat</span>
+        <span class="tag tag-muted">Desktop</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="dispositivos.html">
+      <div class="flow-card-header">
+        <div class="flow-icon green"><i class="ti ti-device-tablet-check"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Gestão de Dispositivos</div>
+        <div class="flow-sub">Status online/offline de todos os totens em tempo real. Marcações por dispositivo, alertas de falha e exportação do arquivo AFD conforme Portaria 671.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-green">Monitoramento</span>
+        <span class="tag tag-amber">AFD</span>
+        <span class="tag tag-purple">REP-P</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- CONFIGURAÇÃO -->
+  <div class="section-header">
+    <div class="section-title">Configuração / Admin</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="flow-grid">
+
+    <a class="flow-card" href="politica.html">
+      <div class="flow-card-header">
+        <div class="flow-icon purple"><i class="ti ti-code"></i></div>
+        <i class="ti ti-arrow-right flow-arrow"></i>
+      </div>
+      <div>
+        <div class="flow-title">Motor de Políticas</div>
+        <div class="flow-sub">Configuração de políticas de cálculo por sindicato. Pipeline de 8 etapas com 3 blocos de script Javascript — qualificação, número e montante.</div>
+      </div>
+      <div class="flow-tags">
+        <span class="tag tag-purple">Javascript</span>
+        <span class="tag tag-blue">Pipeline</span>
+        <span class="tag tag-muted">Sindicatos</span>
+      </div>
+    </a>
+
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-text">Pontual · POC Navegável · Versão 0.2 · Junho 2025 · Confidencial</div>
+  <div class="footer-badge"><div class="footer-dot"></div>7 protótipos interativos</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Horas Extras</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f7f7f5; --bg3: #f0f0ec;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --text: #1a1a18; --muted: #6b6b68; --hint: #9a9a96;
+    --info-bg: #e6f1fb; --info: #185fa5; --info-border: rgba(24,95,165,.3);
+    --warn-bg: #faeeda; --warn: #854f0b;
+    --success-bg: #eaf3de; --success: #3b6d11;
+    --purple-bg: #EEEDFE; --purple: #534AB7;
+    --radius: 8px; --radius-lg: 12px;
+    --sans: 'Inter', sans-serif; --mono: 'JetBrains Mono', monospace;
+  }
+  body { font-family: var(--sans); background: #e8e8e4; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+
+  .page { display: flex; width: 900px; height: 640px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 24px rgba(0,0,0,.08); }
+
+  .sidebar { width: 188px; flex-shrink: 0; background: var(--bg); border-right: 0.5px solid var(--border); display: flex; flex-direction: column; }
+  .sidebar-header { padding: 12px 14px; border-bottom: 0.5px solid var(--border); }
+  .sidebar-label { font-size: 10px; font-weight: 500; color: var(--hint); letter-spacing: 0.8px; text-transform: uppercase; }
+  .sidebar-item { display: flex; align-items: center; gap: 8px; padding: 9px 14px; font-size: 12px; cursor: pointer; color: var(--muted); border-left: 2px solid transparent; transition: all .15s; }
+  .sidebar-item:hover { background: var(--bg2); color: var(--text); }
+  .sidebar-item.active { background: var(--info-bg); color: var(--info); border-left-color: var(--info); }
+  .sidebar-item i { font-size: 14px; }
+
+  .content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+  .content-header { padding: 12px 18px; background: var(--bg); border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .h-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .h-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .h-actions { display: flex; gap: 6px; align-items: center; }
+  .badge-green { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; background: var(--success-bg); color: var(--success); }
+  .btn { font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: var(--radius); cursor: pointer; font-family: var(--sans); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); display: flex; align-items: center; gap: 5px; transition: background .15s; }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--info-bg); color: var(--info); border-color: var(--info-border); }
+  .btn.primary:hover { opacity: .85; }
+
+  .pipeline { padding: 9px 18px; background: var(--bg2); border-bottom: 0.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; gap: 3px; overflow-x: auto; }
+  .pipeline::-webkit-scrollbar { display: none; }
+  .pipe-step { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+  .pipe-node { font-size: 10px; padding: 3px 8px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--muted); background: var(--bg); white-space: nowrap; }
+  .pipe-node.active { background: var(--info-bg); color: var(--info); border-color: var(--info-border); font-weight: 500; }
+  .pipe-arr { font-size: 10px; color: var(--hint); }
+
+  .body { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .body::-webkit-scrollbar { width: 3px; }
+  .body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .block { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .block-hd { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid var(--border); cursor: pointer; user-select: none; transition: background .15s; }
+  .block-hd:hover { background: var(--bg2); }
+  .block-hd-left { display: flex; align-items: center; gap: 9px; }
+  .bicon { width: 26px; height: 26px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .bicon.blue { background: var(--info-bg); color: var(--info); }
+  .bicon.purple { background: var(--purple-bg); color: var(--purple); }
+  .btitle { font-size: 12px; font-weight: 500; color: var(--text); }
+  .bsub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .chevron { font-size: 13px; color: var(--muted); transition: transform .2s; }
+  .chevron.open { transform: rotate(180deg); }
+  .block-body { padding: 12px 14px; }
+
+  .fg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .flabel { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .fhint { font-size: 10px; color: var(--hint); }
+  .field input, .field select { font-size: 12px; padding: 6px 9px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text); font-family: var(--sans); outline: none; width: 100%; }
+  .field input:focus, .field select:focus { border-color: var(--info); }
+
+  .divider { height: 0.5px; background: var(--border); margin: 10px 0; }
+
+  .section-label { font-size: 11px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+  .tlabel { font-size: 12px; color: var(--text); }
+  .tsub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .toggle { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .tslider { position: absolute; inset: 0; background: var(--border2); border-radius: 20px; cursor: pointer; transition: background .2s; }
+  .tslider:before { content: ''; position: absolute; width: 12px; height: 12px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
+  .toggle input:checked + .tslider { background: var(--info); }
+  .toggle input:checked + .tslider:before { transform: translateX(16px); }
+
+  .scripts-grid { display: flex; flex-direction: column; gap: 14px; }
+  .script-block { display: flex; flex-direction: column; gap: 5px; }
+  .script-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; display: inline-flex; width: fit-content; margin-bottom: 2px; }
+  .script-tag.qual { background: var(--purple-bg); color: var(--purple); }
+  .script-tag.num { background: var(--warn-bg); color: var(--warn); }
+  .script-tag.mont { background: var(--success-bg); color: var(--success); }
+  .script-hint { font-size: 10px; color: var(--hint); line-height: 1.5; }
+  .script-hint code { font-family: var(--mono); background: var(--bg2); padding: 0 3px; border-radius: 3px; font-size: 10px; }
+  textarea.script { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 8px 10px; font-family: var(--mono); font-size: 11px; color: var(--text); resize: vertical; width: 100%; min-height: 68px; outline: none; line-height: 1.6; }
+  textarea.script:focus { border-color: var(--info); }
+  .script-sep { height: 0.5px; background: var(--border); }
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<div class="page">
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-label">Políticas</div>
+    </div>
+    <div class="sidebar-item active"><i class="ti ti-clock-bolt"></i>Horas extras</div>
+    <div class="sidebar-item"><i class="ti ti-moon"></i>Hora noturna</div>
+    <div class="sidebar-item"><i class="ti ti-calendar-off"></i>Ausências</div>
+    <div class="sidebar-item"><i class="ti ti-calendar-stats"></i>DSR</div>
+    <div class="sidebar-item"><i class="ti ti-clock-check"></i>Tolerâncias</div>
+    <div class="sidebar-item"><i class="ti ti-calendar-event"></i>Feriados</div>
+    <div class="sidebar-item"><i class="ti ti-building"></i>Sindicatos</div>
+  </div>
+
+  <div class="content">
+
+    <div class="content-header">
+      <div>
+        <div class="h-title">Horas extras — Sindicato do Comércio SP</div>
+        <div class="h-sub">Vigência 01/01/2025 – 31/12/2025</div>
+      </div>
+      <div class="h-actions">
+        <span class="badge-green">Ativa</span>
+        <button class="btn"><i class="ti ti-copy"></i>Duplicar</button>
+        <button class="btn primary"><i class="ti ti-device-floppy"></i>Salvar</button>
+      </div>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-step"><div class="pipe-node">1. Pares de tempo</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">2. Jornada</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">3. Ausências</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node active">4. Horas diárias ←</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">5. Horas semanais</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">6. Horas mensais</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">7. Outros períodos</div><div class="pipe-arr">›</div></div>
+      <div class="pipe-step"><div class="pipe-node">8. Alertas</div></div>
+    </div>
+
+    <div class="body">
+
+      <div class="block">
+        <div class="block-hd" onclick="toggle('params')">
+          <div class="block-hd-left">
+            <div class="bicon blue"><i class="ti ti-adjustments"></i></div>
+            <div>
+              <div class="btitle">Parâmetros</div>
+              <div class="bsub">Rubrica, apuração e tratamento noturno</div>
+            </div>
+          </div>
+          <i class="ti ti-chevron-down chevron open" id="ch-params"></i>
+        </div>
+        <div class="block-body" id="params">
+          <div class="fg3" style="margin-bottom:10px">
+            <div class="field">
+              <div class="flabel">Rubrica de saída</div>
+              <input type="text" value="HE_50">
+              <div class="fhint">Código que será gerado na folha</div>
+            </div>
+            <div class="field">
+              <div class="flabel">Etapa do pipeline</div>
+              <select>
+                <option selected>4. Horas diárias</option>
+                <option>5. Horas semanais</option>
+                <option>6. Horas mensais</option>
+                <option>7. Outros períodos</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="flabel">Destino</div>
+              <select>
+                <option>Pagamento</option>
+                <option>Banco de horas</option>
+                <option>Cascata</option>
+              </select>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="section-label">Tratamento noturno</div>
+          <div class="fg2" style="margin-bottom:8px">
+            <div class="field">
+              <div class="flabel">Hora extra noturna</div>
+              <select>
+                <option>Gera rubrica separada</option>
+                <option>Embutido na hora extra</option>
+                <option>Não se aplica</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="flabel">Rubrica noturna de saída</div>
+              <input type="text" value="HE_NOT">
+            </div>
+          </div>
+          <div class="toggle-row">
+            <div><div class="tlabel">Aplicar redutor noturno</div><div class="tsub">52min30s equivale a 1h para fins de adicional</div></div>
+            <label class="toggle"><input type="checkbox" checked><span class="tslider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-hd" onclick="toggle('scripts')">
+          <div class="block-hd-left">
+            <div class="bicon purple"><i class="ti ti-code"></i></div>
+            <div>
+              <div class="btitle">Scripts de cálculo</div>
+              <div class="bsub">Qualificação · Número · Montante</div>
+            </div>
+          </div>
+          <i class="ti ti-chevron-down chevron open" id="ch-scripts"></i>
+        </div>
+        <div class="block-body" id="scripts">
+          <div class="scripts-grid">
+
+            <div class="script-block">
+              <div class="script-tag qual">1. Qualificação</div>
+              <div class="script-hint">Retorne <code>true</code> se o colaborador/evento se enquadra. Disponível: <code>colaborador</code>, <code>evento</code>, <code>tipodia</code>, <code>jornada</code></div>
+              <textarea class="script">// Qualifica para hora extra em dia de semana
+if (tipodia !== 'DIA_SEMANA') return false;
+if (colaborador.tipoJornada === 'ISENTO') return false;
+return evento.horasTrabalhadas > jornada.cargaDiaria;</textarea>
+            </div>
+
+            <div class="script-sep"></div>
+
+            <div class="script-block">
+              <div class="script-tag num">2. Cálculo de número</div>
+              <div class="script-hint">Retorne a quantidade (horas/minutos) a gerar. Disponível: <code>horasTrabalhadas</code>, <code>cargaDiaria</code>, <code>tolerancia</code></div>
+              <textarea class="script">// Horas excedentes à jornada diária
+const excedente = horasTrabalhadas - cargaDiaria;
+return Math.max(0, excedente - tolerancia);</textarea>
+            </div>
+
+            <div class="script-sep"></div>
+
+            <div class="script-block">
+              <div class="script-tag mont">3. Cálculo de montante</div>
+              <div class="script-hint">Retorne o valor financeiro da rubrica. Disponível: <code>numero</code>, <code>salarioHora</code>, <code>percentual</code></div>
+              <textarea class="script">// Valor = horas × salário/hora × fator
+const fator = 1 + (percentual / 100);
+return numero * salarioHora * fator;</textarea>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggle(id) {
+    const body = document.getElementById(id);
+    const ch = document.getElementById('ch-' + id);
+    const open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : 'block';
+    ch.classList.toggle('open', !open);
+  }
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.addEventListener('click', function() {
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

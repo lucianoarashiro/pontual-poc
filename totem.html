@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pontual — Totem</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0a0c10;
+  --s1:      #12151e;
+  --s2:      #1a1e2a;
+  --border:  rgba(255,255,255,.07);
+  --accent:  #3d7fff;
+  --green:   #1fd97a;
+  --amber:   #f59e0b;
+  --red:     #ef4444;
+  --text:    #f0f2f8;
+  --muted:   #6b7280;
+  --sans:    'Inter', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--sans);
+  background: #060810;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  gap: 16px;
+}
+
+/* ── SHELL ── */
+.totem-shell {
+  width: 520px;
+  background: var(--bg);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.03);
+  position: relative;
+}
+
+/* ── HEADER ── */
+.totem-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--s1);
+}
+
+.logo {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--accent); }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.clock-display {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -1px;
+}
+
+.date-display {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 1px;
+}
+
+/* ── BODY ── */
+.totem-body {
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  position: relative;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; flex-direction: column; align-items: center; width: 100%; animation: fadeIn .2s ease; }
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* idle */
+.idle-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.idle-sub {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.method-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+}
+.method-card:hover { border-color: var(--accent); background: rgba(61,127,255,.06); transform: translateY(-2px); }
+.method-card:active { transform: translateY(0); }
+
+.method-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.method-icon.blue { background: rgba(61,127,255,.15); color: var(--accent); }
+.method-icon.green { background: rgba(31,217,122,.15); color: var(--green); }
+
+.method-title { font-size: 14px; font-weight: 500; color: var(--text); }
+.method-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+.idle-hint {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* bluetooth waiting */
+.bt-ring {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  margin-bottom: 24px;
+}
+.bt-ring::before, .bt-ring::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(61,127,255,.3);
+  animation: ripple 2s ease infinite;
+}
+.bt-ring::before { width: 170px; height: 170px; animation-delay: 0s; }
+.bt-ring::after  { width: 200px; height: 200px; animation-delay: .5s; }
+@keyframes ripple { 0%{opacity:1;transform:scale(.9)} 100%{opacity:0;transform:scale(1.1)} }
+
+.bt-icon { font-size: 52px; color: var(--accent); }
+
+/* QR */
+.qr-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.qr-svg { display: block; }
+
+.qr-timer {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+.qr-timer.warn { color: var(--amber); border-color: rgba(245,158,11,.3); }
+
+/* matrícula */
+.matricula-form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mat-label { font-size: 13px; color: var(--muted); text-align: center; }
+
+.mat-display {
+  background: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 6px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-display.filled { border-color: rgba(61,127,255,.4); }
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.num-key {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.num-key:hover { background: var(--s2); border-color: rgba(61,127,255,.3); }
+.num-key:active { transform: scale(.95); }
+.num-key.del { color: var(--muted); font-size: 16px; }
+.num-key.ok { background: rgba(61,127,255,.15); border-color: rgba(61,127,255,.3); color: var(--accent); }
+.num-key.ok:hover { background: rgba(61,127,255,.25); }
+
+/* success */
+.success-circle {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: rgba(31,217,122,.12);
+  border: 2px solid var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+  color: var(--green);
+  margin-bottom: 24px;
+  animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+
+.success-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.success-info {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.success-badge {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 18px;
+  border-radius: 20px;
+  background: rgba(31,217,122,.12);
+  color: var(--green);
+  border: 1px solid rgba(31,217,122,.25);
+  margin-bottom: 32px;
+}
+
+/* error */
+.error-circle {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(239,68,68,.1);
+  border: 2px solid var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px;
+  color: var(--red);
+  margin-bottom: 20px;
+}
+
+/* presença simultânea */
+.presence-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.presence-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--s2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  animation: slideIn .2s ease;
+}
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+
+.presence-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #7c5cfc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+  flex-shrink: 0;
+}
+.presence-name { font-size: 13px; color: var(--text); flex: 1; }
+.presence-time { font-size: 11px; color: var(--green); font-family: var(--mono); }
+
+/* section title */
+.screen-title { font-size: 20px; font-weight: 600; color: var(--text); margin-bottom: 6px; text-align: center; letter-spacing: -0.3px; }
+.screen-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 28px; line-height: 1.5; }
+
+/* back btn */
+.back-btn {
+  position: absolute;
+  top: 16px; left: 16px;
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.back-btn:hover { color: var(--text); border-color: rgba(255,255,255,.15); }
+
+/* big action btn */
+.big-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all .15s;
+}
+.big-btn.primary { background: var(--accent); color: #fff; }
+.big-btn.primary:hover { opacity: .9; }
+.big-btn.ghost { background: var(--s2); color: var(--muted); border: 1px solid var(--border); margin-top: 8px; }
+.big-btn.ghost:hover { color: var(--text); }
+
+/* footer */
+.totem-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--s1);
+}
+.footer-info { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.footer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+/* nav hint */
+.nav-hint {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+.nav-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--s2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: var(--sans);
+}
+.nav-dot:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body><div id="poc-nav" style="position:fixed;top:0;left:0;right:0;height:44px;background:#13161f;border-bottom:0.5px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:9999;font-family:Inter,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.4)">
+  <a href="index.html" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#e8eaf0;font-size:13px;font-weight:500">
+    <span style="font-size:14px;color:#4f8ef7">&#8592;</span>
+    <span style="font-family:monospace;font-size:13px;letter-spacing:-.5px">pont<span style="color:#4f8ef7">.</span>ual</span>
+    <span style="font-size:11px;color:#4a4f62">/ POC</span>
+  </a>
+  <div style="display:flex;gap:4px;flex-wrap:wrap">
+    <a href="mobile-home.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">App</a>
+    <a href="mobile-faceid.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Face ID</a>
+    <a href="mobile-pin.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">PIN</a>
+    <a href="totem.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Totem</a>
+    <a href="desktop.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">RH</a>
+    <a href="dispositivos.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Dispositivos</a>
+    <a href="politica.html" style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);border:0.5px solid rgba(255,255,255,.08);color:#7a8099;text-decoration:none">Política</a>
+  </div>
+</div><div style="height:44px"></div>
+
+<div class="totem-shell">
+
+  <!-- HEADER -->
+  <div class="totem-header">
+    <div class="logo">pont<span>.</span>ual</div>
+    <div class="header-right">
+      <div>
+        <div class="clock-display" id="clock">--:--</div>
+        <div class="date-display" id="dateDisplay">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="totem-body" id="totemBody">
+
+    <!-- IDLE — tela principal -->
+    <div class="screen active" id="screen-idle">
+      <div class="idle-title">Registre sua presença</div>
+      <div class="idle-sub">Escolha como deseja marcar o ponto</div>
+      <div class="methods">
+        <div class="method-card" onclick="goTo('screen-bt')">
+          <div class="method-icon blue"><i class="ti ti-bluetooth"></i></div>
+          <div>
+            <div class="method-title">Pelo celular</div>
+            <div class="method-sub">Aproxime o celular com o app aberto</div>
+          </div>
+        </div>
+        <div class="method-card" onclick="goTo('screen-matricula')">
+          <div class="method-icon green"><i class="ti ti-id-badge"></i></div>
+          <div>
+            <div class="method-title">Pela matrícula</div>
+            <div class="method-sub">Digite sua matrícula no teclado</div>
+          </div>
+        </div>
+      </div>
+      <div class="idle-hint">
+        <i class="ti ti-bluetooth" style="color:var(--accent);font-size:14px"></i>
+        <span id="btStatus">Aguardando dispositivos próximos...</span>
+      </div>
+
+      <!-- lista de presenças simultâneas detectadas -->
+      <div class="presence-list" id="presenceList" style="margin-top:20px"></div>
+    </div>
+
+    <!-- BLUETOOTH — aguardando -->
+    <div class="screen" id="screen-bt">
+      <div class="back-btn" onclick="goTo('screen-idle')"><i class="ti ti-arrow-left"></i></div>
+      <div class="bt-ring">
+        <i class="ti ti-bluetooth bt-icon"></i>
+      </div>
+      <div class="screen-title">Aproxime o celular</div>
+      <div class="screen-sub">Mantenha o app aberto e o Bluetooth ativado.<br>O registro acontece automaticamente.</div>
+      <button class="big-btn ghost" onclick="simularBluetooth()">
+        <i class="ti ti-device-mobile"></i>Simular detecção
+      </button>
+    </div>
+
+    <!-- QR CODE — fallback pelo celular -->
+    <div class="screen" id="screen-qr">
+      <div class="back-btn" onclick="goTo('screen-idle')"><i class="ti ti-arrow-left"></i></div>
+      <div class="screen-title">Escaneie o QR Code</div>
+      <div class="screen-sub">Abra o app e aponte a câmera para o código abaixo</div>
+      <div class="qr-box">
+        <svg class="qr-svg" width="160" height="160" viewBox="0 0 160 160">
+          <!-- QR simulado -->
+          <rect width="160" height="160" fill="white"/>
+          <!-- finder patterns -->
+          <rect x="10" y="10" width="50" height="50" rx="4" fill="#0a0c10"/>
+          <rect x="16" y="16" width="38" height="38" rx="2" fill="white"/>
+          <rect x="22" y="22" width="26" height="26" rx="1" fill="#0a0c10"/>
+          <rect x="100" y="10" width="50" height="50" rx="4" fill="#0a0c10"/>
+          <rect x="106" y="16" width="38" height="38" rx="2" fill="white"/>
+          <rect x="112" y="22" width="26" height="26" rx="1" fill="#0a0c10"/>
+          <rect x="10" y="100" width="50" height="50" rx="4" fill="#0a0c10"/>
+          <rect x="16" y="106" width="38" height="38" rx="2" fill="white"/>
+          <rect x="22" y="112" width="26" height="26" rx="1" fill="#0a0c10"/>
+          <!-- data modules simulados -->
+          <rect x="70" y="10" width="8" height="8" fill="#0a0c10"/>
+          <rect x="82" y="10" width="8" height="8" fill="#0a0c10"/>
+          <rect x="70" y="22" width="8" height="8" fill="#0a0c10"/>
+          <rect x="70" y="46" width="8" height="8" fill="#0a0c10"/>
+          <rect x="82" y="34" width="8" height="8" fill="#0a0c10"/>
+          <rect x="70" y="70" width="8" height="8" fill="#0a0c10"/>
+          <rect x="82" y="58" width="8" height="8" fill="#0a0c10"/>
+          <rect x="94" y="70" width="8" height="8" fill="#0a0c10"/>
+          <rect x="106" y="70" width="8" height="8" fill="#0a0c10"/>
+          <rect x="118" y="58" width="8" height="8" fill="#0a0c10"/>
+          <rect x="130" y="70" width="8" height="8" fill="#0a0c10"/>
+          <rect x="142" y="58" width="8" height="8" fill="#0a0c10"/>
+          <rect x="70" y="82" width="8" height="8" fill="#0a0c10"/>
+          <rect x="82" y="94" width="8" height="8" fill="#0a0c10"/>
+          <rect x="94" y="82" width="8" height="8" fill="#0a0c10"/>
+          <rect x="106" y="94" width="8" height="8" fill="#0a0c10"/>
+          <rect x="118" y="82" width="8" height="8" fill="#0a0c10"/>
+          <rect x="130" y="106" width="8" height="8" fill="#0a0c10"/>
+          <rect x="142" y="94" width="8" height="8" fill="#0a0c10"/>
+          <rect x="70" y="118" width="8" height="8" fill="#0a0c10"/>
+          <rect x="82" y="130" width="8" height="8" fill="#0a0c10"/>
+          <rect x="94" y="118" width="8" height="8" fill="#0a0c10"/>
+          <rect x="106" y="130" width="8" height="8" fill="#0a0c10"/>
+          <rect x="118" y="142" width="8" height="8" fill="#0a0c10"/>
+          <rect x="130" y="118" width="8" height="8" fill="#0a0c10"/>
+          <rect x="142" y="130" width="8" height="8" fill="#0a0c10"/>
+        </svg>
+        <div class="qr-timer" id="qrTimer">Expira em 28s</div>
+      </div>
+      <div style="margin-top:28px"></div>
+      <button class="big-btn ghost" onclick="simularQR()">
+        <i class="ti ti-qrcode"></i>Simular leitura do QR
+      </button>
+    </div>
+
+    <!-- MATRÍCULA — sem celular -->
+    <div class="screen" id="screen-matricula">
+      <div class="back-btn" onclick="goTo('screen-idle')"><i class="ti ti-arrow-left"></i></div>
+      <div class="screen-title">Digite sua matrícula</div>
+      <div class="screen-sub">Informe os dígitos da sua matrícula</div>
+      <div class="matricula-form">
+        <div class="mat-display" id="matDisplay">_ _ _ _ _</div>
+        <div class="numpad" id="numpad">
+          <button class="num-key" onclick="numPress('1')">1</button>
+          <button class="num-key" onclick="numPress('2')">2</button>
+          <button class="num-key" onclick="numPress('3')">3</button>
+          <button class="num-key" onclick="numPress('4')">4</button>
+          <button class="num-key" onclick="numPress('5')">5</button>
+          <button class="num-key" onclick="numPress('6')">6</button>
+          <button class="num-key" onclick="numPress('7')">7</button>
+          <button class="num-key" onclick="numPress('8')">8</button>
+          <button class="num-key" onclick="numPress('9')">9</button>
+          <button class="num-key del" onclick="numDel()"><i class="ti ti-backspace"></i></button>
+          <button class="num-key" onclick="numPress('0')">0</button>
+          <button class="num-key ok" onclick="numOk()"><i class="ti ti-check"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="screen" id="screen-success">
+      <div class="success-circle"><i class="ti ti-check"></i></div>
+      <div class="success-name" id="successName">Luciano Costa</div>
+      <div class="success-info" id="successInfo">Matrícula 48210 · Setor Operações</div>
+      <div class="success-badge" id="successBadge">Entrada registrada às 08:02</div>
+      <div style="font-size:12px;color:var(--muted);text-align:center">Voltando em <span id="countdown">4</span>s...</div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="screen" id="screen-error">
+      <div class="error-circle"><i class="ti ti-x"></i></div>
+      <div class="screen-title" style="color:var(--red)">Matrícula não encontrada</div>
+      <div class="screen-sub">Verifique os dígitos e tente novamente.<br>Em caso de dúvida, procure o RH.</div>
+      <button class="big-btn primary" onclick="goTo('screen-matricula')">Tentar novamente</button>
+      <button class="big-btn ghost" onclick="goTo('screen-idle')">Voltar ao início</button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="totem-footer">
+    <div class="footer-info">
+      <div class="footer-dot"></div>
+      Totem 01 · Portaria Principal
+    </div>
+    <div class="footer-info">
+      <i class="ti ti-bluetooth" style="color:var(--accent)"></i>
+      <span id="btCount">0 dispositivos próximos</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV HINT -->
+<div style="display:flex;gap:8px;align-items:center">
+  <div style="font-size:12px;color:rgba(255,255,255,.3)">Simular:</div>
+  <div class="nav-dot" onclick="goTo('screen-idle')" title="Idle">⊞</div>
+  <div class="nav-dot" onclick="goTo('screen-bt')" title="Bluetooth">⌘</div>
+  <div class="nav-dot" onclick="goTo('screen-qr')" title="QR Code">▣</div>
+  <div class="nav-dot" onclick="goTo('screen-matricula')" title="Matrícula">⌨</div>
+  <div class="nav-dot" onclick="showSuccess('Luciano Costa','48210','Entrada')" title="Sucesso">✓</div>
+  <div class="nav-dot" onclick="goTo('screen-error')" title="Erro">✕</div>
+</div>
+
+<script>
+let currentScreen = 'screen-idle';
+let matValue = '';
+let qrInterval = null;
+let qrSeconds = 28;
+let countdownInterval = null;
+let presenceInterval = null;
+
+// ── NAVEGAÇÃO ──
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+
+  if (id === 'screen-matricula') { matValue = ''; updateMat(); }
+  if (id === 'screen-qr') startQrTimer();
+  else stopQrTimer();
+  if (id === 'screen-idle') startPresenceSimulation();
+  else stopPresenceSimulation();
+}
+
+// ── RELÓGIO ──
+function tick() {
+  const t = new Date();
+  document.getElementById('clock').textContent = t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  document.getElementById('dateDisplay').textContent = `${dias[t.getDay()]}, ${t.getDate()} ${meses[t.getMonth()]}`;
+}
+setInterval(tick, 1000);
+tick();
+
+// ── MATRÍCULA ──
+function updateMat() {
+  const display = document.getElementById('matDisplay');
+  const filled = matValue.padEnd(5, '_').split('').join(' ');
+  display.textContent = filled;
+  display.classList.toggle('filled', matValue.length > 0);
+}
+
+function numPress(n) {
+  if (matValue.length >= 6) return;
+  matValue += n;
+  updateMat();
+}
+
+function numDel() {
+  matValue = matValue.slice(0, -1);
+  updateMat();
+}
+
+function numOk() {
+  if (matValue.length < 4) return;
+  if (matValue === '48210' || matValue === '1234' || matValue.length >= 4) {
+    showSuccess('Luciano Costa', matValue, 'Entrada');
+  } else {
+    goTo('screen-error');
+  }
+}
+
+// ── SUCCESS ──
+function showSuccess(name, mat, tipo) {
+  document.getElementById('successName').textContent = name;
+  document.getElementById('successInfo').textContent = `Matrícula ${mat} · Setor Operações`;
+  const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('successBadge').textContent = `${tipo} registrada às ${t}`;
+  goTo('screen-success');
+  let n = 4;
+  document.getElementById('countdown').textContent = n;
+  if (countdownInterval) clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    n--;
+    document.getElementById('countdown').textContent = n;
+    if (n <= 0) { clearInterval(countdownInterval); goTo('screen-idle'); }
+  }, 1000);
+}
+
+// ── BLUETOOTH SIMULATE ──
+function simularBluetooth() {
+  showSuccess('Ana Ferreira', '38201', 'Entrada');
+}
+
+// ── QR SIMULATE ──
+function simularQR() {
+  showSuccess('Carlos Mota', '39041', 'Entrada');
+}
+
+// ── QR TIMER ──
+function startQrTimer() {
+  stopQrTimer();
+  qrSeconds = 28;
+  updateQrTimer();
+  qrInterval = setInterval(() => {
+    qrSeconds--;
+    if (qrSeconds <= 0) { qrSeconds = 28; }
+    updateQrTimer();
+  }, 1000);
+}
+
+function stopQrTimer() {
+  if (qrInterval) { clearInterval(qrInterval); qrInterval = null; }
+}
+
+function updateQrTimer() {
+  const el = document.getElementById('qrTimer');
+  if (!el) return;
+  el.textContent = `Expira em ${qrSeconds}s`;
+  el.className = 'qr-timer' + (qrSeconds <= 8 ? ' warn' : '');
+}
+
+// ── PRESENÇA SIMULTÂNEA (IDLE) ──
+const nomes = [
+  { n: 'Ana F.', i: 'AF' }, { n: 'Carlos M.', i: 'CM' },
+  { n: 'João S.', i: 'JS' }, { n: 'Maria L.', i: 'ML' },
+  { n: 'Pedro R.', i: 'PR' }, { n: 'Lucia T.', i: 'LT' }
+];
+let presIdx = 0;
+
+function startPresenceSimulation() {
+  stopPresenceSimulation();
+  document.getElementById('presenceList').innerHTML = '';
+  presIdx = 0;
+  document.getElementById('btStatus').textContent = 'Aguardando dispositivos próximos...';
+  document.getElementById('btCount').textContent = '0 dispositivos próximos';
+  presenceInterval = setInterval(() => {
+    if (presIdx >= nomes.length) { stopPresenceSimulation(); return; }
+    const pessoa = nomes[presIdx];
+    addPresence(pessoa.n, pessoa.i);
+    presIdx++;
+    document.getElementById('btCount').textContent = `${presIdx} dispositivo${presIdx > 1 ? 's' : ''} próximo${presIdx > 1 ? 's' : ''}`;
+    document.getElementById('btStatus').textContent = `${presIdx} registro${presIdx > 1 ? 's' : ''} confirmado${presIdx > 1 ? 's' : ''}`;
+  }, 1200);
+}
+
+function stopPresenceSimulation() {
+  if (presenceInterval) { clearInterval(presenceInterval); presenceInterval = null; }
+}
+
+function addPresence(nome, iniciais) {
+  const list = document.getElementById('presenceList');
+  const t = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  const item = document.createElement('div');
+  item.className = 'presence-item';
+  item.innerHTML = `
+    <div class="presence-avatar">${iniciais}</div>
+    <div class="presence-name">${nome}</div>
+    <div class="presence-time">✓ ${t}</div>`;
+  list.insertBefore(item, list.firstChild);
+  if (list.children.length > 4) list.removeChild(list.lastChild);
+}
+
+// init
+startPresenceSimulation();
+</script>
+</body>
+</html>
